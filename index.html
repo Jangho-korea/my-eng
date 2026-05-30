@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MY·ENG" />
+  <meta name="theme-color" content="#2d6a2d" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>MY·ENG</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Gowun+Dodum&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --bg: #f5f5f2; --surface: #ffffff; --surface2: #f9f9f7;
+      --border: rgba(0,0,0,0.07); --border2: rgba(0,0,0,0.14);
+      --accent: #2d6a2d; --accent-light: #e8f4e8;
+      --text: #1a1a1a; --text2: #666; --text3: #aaa;
+      --red: #d94f4f; --green: #2a9d5c; --blue: #2563a8; --yellow: #b87d00; --purple: #6b4fa0;
+      --font-mono: 'DM Mono', monospace; --font-body: 'Gowun Dodum', sans-serif;
+      --r: 10px; --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overscroll-behavior: none; }
+    #app { display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; min-height: 100vh; }
+
+    /* AUTH */
+    #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 24px; gap: 24px; }
+    .auth-logo { font-family: var(--font-mono); font-size: 28px; color: var(--accent); letter-spacing: 0.15em; font-weight: 500; }
+    .auth-desc { font-size: 14px; color: var(--text2); text-align: center; line-height: 1.7; }
+    .auth-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; width: 100%; max-width: 360px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; }
+    .auth-title { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+    .auth-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--font-body); font-size: 15px; padding: 12px 14px; outline: none; transition: border-color 0.15s; }
+    .auth-input:focus { border-color: var(--accent); }
+    .auth-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--r); padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
+    .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .auth-msg { font-size: 13px; text-align: center; min-height: 20px; }
+    .auth-msg.success { color: var(--green); }
+    .auth-msg.error { color: var(--red); }
+
+    /* HEADER */
+    .header { padding: 20px 20px 0; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-family: var(--font-mono); font-size: 13px; color: var(--accent); letter-spacing: 0.1em; font-weight: 500; }
+    .streak-badge { display: flex; align-items: center; gap: 5px; background: var(--accent-light); border: 1px solid rgba(45,106,45,0.2); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--accent); font-family: var(--font-mono); }
+
+    /* NAV */
+    .nav { display: flex; gap: 4px; padding: 14px 20px 0; }
+    .nav-btn { flex: 1; padding: 9px 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); color: var(--text2); font-size: 11px; font-family: var(--font-body); cursor: pointer; transition: all 0.15s; text-align: center; box-shadow: var(--shadow); }
+    .nav-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; box-shadow: none; }
+
+    /* PAGES */
+    .page { display: none; flex: 1; padding: 14px 20px 28px; flex-direction: column; gap: 12px; }
+    .page.active { display: flex; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; box-shadow: var(--shadow); }
+    .card-title { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--font-mono); margin-bottom: 12px; }
+
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 12px; text-align: center; box-shadow: var(--shadow); }
+    .stat-num { font-family: var(--font-mono); font-size: 24px; font-weight: 500; color: var(--accent); }
+    .stat-label { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+    .due-banner { background: var(--accent); border-radius: var(--r); padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; }
+    .due-count { font-family: var(--font-mono); font-size: 28px; color: #fff; }
+    .due-label { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+    .start-btn { background: #fff; color: var(--accent); border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
+
+    .type-pill { display: inline-flex; align-items: center; font-size: 10px; font-family: var(--font-mono); border-radius: 20px; padding: 3px 9px; }
+    .type-expr { background: #dbeafe; color: var(--blue); border: 1px solid #bfdbfe; }
+    .type-sent { background: #ede9fe; color: var(--purple); border: 1px solid #ddd6fe; }
+    .level-pill { font-size: 10px; font-family: var(--font-mono); border-radius: 20px; padding: 3px 9px; }
+    .level-new { background: #dbeafe; color: var(--blue); }
+    .level-learning { background: #fef3c7; color: var(--yellow); }
+    .level-known { background: #d1fae5; color: var(--green); }
+
+    .item-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+    .item-row:last-child { border-bottom: none; }
+    .item-en { font-family: var(--font-mono); font-size: 13px; color: var(--text); line-height: 1.4; }
+    .item-ko { font-size: 12px; color: var(--text2); margin-top: 3px; }
+    .item-example { font-size: 11px; color: var(--text3); margin-top: 4px; font-style: italic; line-height: 1.5; }
+
+    .sub-tabs { display: flex; gap: 6px; }
+    .sub-tab { padding: 7px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text2); font-size: 12px; font-family: var(--font-body); cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow); }
+    .sub-tab.active { background: var(--text); border-color: var(--text); color: #fff; }
+
+    .add-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); }
+    .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .input-label { font-size: 10px; color: var(--text3); font-family: var(--font-mono); letter-spacing: 0.06em; }
+    input[type=text], input[type=password], input[type=email], textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: var(--font-body); font-size: 14px; padding: 10px 12px;
+      outline: none; transition: border-color 0.15s;
+    }
+    textarea { resize: none; line-height: 1.6; }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    input::placeholder, textarea::placeholder { color: var(--text3); }
+    .add-submit-btn { width: 100%; background: none; border: 1.5px dashed var(--border2); color: var(--text2); border-radius: var(--r); padding: 12px; font-size: 13px; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; margin-top: 4px; }
+    .add-submit-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+    .trans-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); color: var(--text); font-family: var(--font-body); font-size: 15px; padding: 14px; resize: none; outline: none; transition: border-color 0.15s; line-height: 1.6; }
+    .trans-textarea:focus { border-color: var(--accent); }
+    .trans-textarea::placeholder { color: var(--text3); }
+    .translate-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--r); padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
+    .translate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .result-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); }
+    .result-en-text { font-family: var(--font-mono); font-size: 15px; color: var(--text); line-height: 1.7; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+    .save-row { display: flex; justify-content: space-between; align-items: center; }
+    .save-expr-btn { background: none; border: 1px solid var(--border2); color: var(--text2); border-radius: 8px; padding: 7px 12px; font-size: 11px; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
+    .save-expr-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .save-expr-btn.saved { border-color: var(--green); color: var(--green); background: #d1fae5; }
+
+    /* API key banner */
+    .api-banner { background: #fffbeb; border: 1px solid #fcd34d; border-radius: var(--r); padding: 14px 16px; }
+    .api-banner-title { font-size: 12px; color: var(--yellow); font-family: var(--font-mono); margin-bottom: 6px; }
+    .api-banner-desc { font-size: 12px; color: var(--text2); margin-bottom: 10px; line-height: 1.6; }
+    .api-key-row { display: flex; gap: 8px; }
+    .api-key-row input { flex: 1; font-family: var(--font-mono); font-size: 12px; }
+    .api-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 10px 14px; font-size: 12px; cursor: pointer; font-family: var(--font-body); white-space: nowrap; font-weight: 700; }
+    .api-connected { background: #f0fdf4; border: 1px solid #86efac; border-radius: var(--r); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+    .api-connected-label { font-size: 12px; color: var(--green); font-family: var(--font-mono); }
+    .api-reset-btn { background: none; border: 1px solid #86efac; color: var(--green); border-radius: 6px; padding: 5px 10px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+
+    .loading-dots { display: flex; gap: 6px; align-items: center; }
+    .dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: bounce 0.9s infinite; }
+    .dot:nth-child(2) { animation-delay: 0.15s; }
+    .dot:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.3} 40%{transform:scale(1);opacity:1} }
+
+    .review-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px 22px; text-align: center; min-height: 200px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .review-card::before { content:''; position:absolute; top:-40px; right:-40px; width:120px; height:120px; background: var(--accent-light); border-radius:50%; }
+    .rc-label { font-size: 10px; color: var(--text3); font-family: var(--font-mono); margin-bottom: 16px; letter-spacing: 0.08em; }
+    .rc-main { font-family: var(--font-mono); font-size: 22px; color: var(--text); line-height: 1.4; position: relative; }
+    .rc-answer-main { font-family: var(--font-mono); font-size: 20px; color: var(--accent); line-height: 1.4; margin-bottom: 8px; position: relative; }
+    .rc-answer-example { font-size: 12px; color: var(--text2); font-style: italic; line-height: 1.6; position: relative; }
+    .flip-btn { width: 100%; background: var(--surface); border: 1px solid var(--border2); color: var(--text2); border-radius: var(--r); padding: 11px; font-size: 13px; cursor: pointer; font-family: var(--font-body); box-shadow: var(--shadow); }
+    .answer-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .ans-btn { padding: 11px 6px; border-radius: var(--r); border: 1px solid; font-size: 12px; cursor: pointer; font-family: var(--font-body); line-height: 1.4; }
+    .ans-hard { background: #fee2e2; border-color: #fca5a5; color: var(--red); }
+    .ans-ok { background: #fef3c7; border-color: #fcd34d; color: var(--yellow); }
+    .ans-easy { background: #d1fae5; border-color: #6ee7b7; color: var(--green); }
+    .progress-bar-wrap { background: var(--border); border-radius: 4px; height: 3px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s; }
+    .done-box { text-align: center; padding: 48px 20px; }
+    .done-emoji { font-size: 40px; margin-bottom: 14px; }
+    .done-title { font-size: 20px; color: var(--text); margin-bottom: 6px; }
+    .done-sub { font-size: 13px; color: var(--text2); line-height: 1.7; }
+    .empty-state { text-align: center; padding: 32px 16px; color: var(--text3); font-size: 13px; line-height: 1.7; }
+    .delete-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 13px; padding: 4px 6px; flex-shrink: 0; }
+    .delete-btn:hover { color: var(--red); }
+    .tag { font-size: 11px; font-family: var(--font-mono); background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+    .tag.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .logout-btn { background: none; border: 1px solid var(--border2); color: var(--text3); border-radius: 8px; padding: 5px 10px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
+    .sync-indicator { font-size: 10px; color: var(--text3); font-family: var(--font-mono); }
+    .sync-indicator.syncing { color: var(--yellow); }
+    .sync-indicator.synced { color: var(--green); }
+  </style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" style="display:none;">
+  <div class="auth-logo">MY·ENG</div>
+  <div class="auth-desc">나만의 영어 공부 앱<br>이메일로 로그인하면 모든 기기에서 동기화돼</div>
+  <div class="auth-card">
+    <div class="auth-title" id="auth-mode-label">이메일로 시작하기</div>
+    <input class="auth-input" type="email" id="auth-email" placeholder="이메일 주소" />
+    <input class="auth-input" type="password" id="auth-password" placeholder="비밀번호 (6자 이상)" />
+    <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">로그인 / 회원가입</button>
+    <div class="auth-msg" id="auth-msg"></div>
+    <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6;">
+      처음이면 자동으로 계정이 만들어져<br>비밀번호를 잊었다면 이메일로 재설정 링크를 받을 수 있어
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+  <div class="header">
+    <div class="logo">MY·ENG</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="sync-indicator" id="sync-indicator"></span>
+      <div class="streak-badge" id="streak-display">🔥 0일 연속</div>
+      <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showPage('home')">홈</button>
+    <button class="nav-btn" onclick="showPage('translate')">번역</button>
+    <button class="nav-btn" onclick="showPage('add')">추가</button>
+    <button class="nav-btn" onclick="showPage('review')">복습</button>
+    <button class="nav-btn" onclick="showPage('words')">단어장</button>
+  </div>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="stat-expr">0</div><div class="stat-label">표현</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-sent">0</div><div class="stat-label">문장</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-due">0</div><div class="stat-label">복습 예정</div></div>
+    </div>
+    <div class="due-banner">
+      <div>
+        <div class="due-count" id="due-count">0</div>
+        <div class="due-label">오늘 복습할 카드</div>
+      </div>
+      <button class="start-btn" onclick="showPage('review')">시작하기 →</button>
+    </div>
+    <div class="card">
+      <div class="card-title">최근 추가</div>
+      <div id="recent-list"><div class="empty-state">아직 저장된 항목이 없어요</div></div>
+    </div>
+  </div>
+
+  <!-- TRANSLATE -->
+  <div class="page" id="page-translate">
+    <div id="api-key-section"></div>
+    <div id="translate-form" style="display:none;flex-direction:column;gap:12px;">
+      <div class="card">
+        <div class="card-title">한국어 → 영어 번역</div>
+        <textarea class="trans-textarea" id="ko-input" rows="4" placeholder="영어로 말하고 싶은 한국어 문장을 입력해봐&#10;예: 그 회의는 다음 주로 미뤄졌어"></textarea>
+        <div style="margin-top:10px;">
+          <button class="translate-btn" id="trans-btn" onclick="doTranslate()">번역하기</button>
+        </div>
+      </div>
+      <div id="trans-loading" style="display:none;">
+        <div class="card" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px;">
+          <div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          <div style="font-size:12px;color:var(--text3);">번역 중...</div>
+        </div>
+      </div>
+      <div id="trans-result" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- ADD -->
+  <div class="page" id="page-add">
+    <div class="add-section">
+      <div class="section-header">
+        <span class="type-pill type-expr">표현</span>
+        <span style="font-size:13px;color:var(--text2);">단어 / 표현 추가</span>
+      </div>
+      <div class="input-group">
+        <div class="input-label">영어 표현 *</div>
+        <input type="text" id="add-expr-en" placeholder="예: get the ball rolling" />
+      </div>
+      <div class="input-group">
+        <div class="input-label">한국어 의미 *</div>
+        <input type="text" id="add-expr-ko" placeholder="예: 일을 시작하다, 추진하다" />
+      </div>
+      <div class="input-group">
+        <div class="input-label">예시 문장 *</div>
+        <input type="text" id="add-expr-example" placeholder="예: Let's get the ball rolling on this project." />
+      </div>
+      <div class="tag-row" style="margin-bottom:12px;">
+        <span class="tag active" onclick="toggleTag(this,'expr')" data-tag="업무">업무</span>
+        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="일상">일상</span>
+        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="이디엄">이디엄</span>
+        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="비즈니스">비즈니스</span>
+        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="구동사">구동사</span>
+      </div>
+      <button class="add-submit-btn" onclick="addExpression()">+ 표현 추가하기</button>
+    </div>
+    <div class="add-section">
+      <div class="section-header">
+        <span class="type-pill type-sent">문장</span>
+        <span style="font-size:13px;color:var(--text2);">통째로 외울 문장 추가</span>
+      </div>
+      <div class="input-group">
+        <div class="input-label">영어 문장 *</div>
+        <textarea id="add-sent-en" rows="2" placeholder="예: I'll keep you posted on any updates."></textarea>
+      </div>
+      <div class="input-group">
+        <div class="input-label">한국어 의미 *</div>
+        <input type="text" id="add-sent-ko" placeholder="예: 새로운 소식이 있으면 계속 알려줄게" />
+      </div>
+      <div class="tag-row" style="margin-bottom:12px;">
+        <span class="tag active" onclick="toggleTag(this,'sent')" data-tag="업무">업무</span>
+        <span class="tag" onclick="toggleTag(this,'sent')" data-tag="일상">일상</span>
+        <span class="tag" onclick="toggleTag(this,'sent')" data-tag="비즈니스">비즈니스</span>
+        <span class="tag" onclick="toggleTag(this,'sent')" data-tag="기타">기타</span>
+      </div>
+      <button class="add-submit-btn" onclick="addSentence()">+ 문장 추가하기</button>
+    </div>
+  </div>
+
+  <!-- REVIEW -->
+  <div class="page" id="page-review">
+    <div id="review-area"></div>
+  </div>
+
+  <!-- WORDS -->
+  <div class="page" id="page-words">
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchWordTab(this,'all')">전체</button>
+      <button class="sub-tab" onclick="switchWordTab(this,'expr')">표현</button>
+      <button class="sub-tab" onclick="switchWordTab(this,'sent')">문장</button>
+    </div>
+    <div class="card" style="padding-top:12px;">
+      <div id="words-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Supabase 설정 ──────────────────────────────────
+const SUPABASE_URL = 'https://cubrnpnkgehyjhgxvoo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_3_jMhWzY3PEWsLqTt4D9kQ_gULBI9QR';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── 상태 ──────────────────────────────────────────
+const API_KEY_SK = 'my_eng_apikey';
+let items = [];
+let streak = 0;
+let lastStudyDate = null;
+let currentUser = null;
+let apiKey = '';
+
+// ── 유틸 ──────────────────────────────────────────
+function today() { return new Date().toISOString().split('T')[0]; }
+function srsNext(lvl) {
+  const days = [0,1,3,7,14,30,90];
+  const dt = new Date(); dt.setDate(dt.getDate()+days[Math.min(lvl,days.length-1)]);
+  return dt.toISOString().split('T')[0];
+}
+function dueItems() { const t = today(); return items.filter(w => !w.next_review || w.next_review <= t); }
+function setSyncStatus(s) {
+  const el = document.getElementById('sync-indicator');
+  if (!el) return;
+  if (s==='syncing') { el.textContent='동기화 중...'; el.className='sync-indicator syncing'; }
+  else if (s==='synced') { el.textContent='✓ 동기화됨'; el.className='sync-indicator synced'; setTimeout(()=>{ el.textContent=''; }, 2000); }
+  else { el.textContent=''; el.className='sync-indicator'; }
+}
+
+// ── 인증 ──────────────────────────────────────────
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    showApp();
+  } else {
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session) { currentUser = session.user; showApp(); }
+    else { currentUser = null; showAuthScreen(); }
+  });
+}
+
+async function handleAuth() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value.trim();
+  const msg = document.getElementById('auth-msg');
+  const btn = document.getElementById('auth-submit-btn');
+  if (!email || !password) { msg.textContent = '이메일과 비밀번호를 입력해줘'; msg.className='auth-msg error'; return; }
+  btn.disabled = true;
+  msg.textContent = '처리 중...'; msg.className='auth-msg';
+
+  // 로그인 먼저 시도
+  let { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error && error.message.includes('Invalid login credentials')) {
+    // 계정 없으면 회원가입
+    const res = await sb.auth.signUp({ email, password });
+    if (res.error) { msg.textContent = res.error.message; msg.className='auth-msg error'; btn.disabled=false; return; }
+    msg.textContent = '계정이 만들어졌어! 이메일 확인 후 로그인해줘'; msg.className='auth-msg success';
+    btn.disabled = false; return;
+  }
+  if (error) { msg.textContent = error.message; msg.className='auth-msg error'; btn.disabled=false; return; }
+  // 성공 시 onAuthStateChange가 처리
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  items = []; streak = 0; lastStudyDate = null;
+}
+
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  apiKey = localStorage.getItem(API_KEY_SK) || '';
+  loadItems();
+}
+
+function showAuthScreen() {
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+// ── DB 연동 ───────────────────────────────────────
+async function loadItems() {
+  if (!currentUser) return;
+  setSyncStatus('syncing');
+  const { data, error } = await sb.from('items').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+  if (!error && data) {
+    items = data;
+    // streak 계산 (로컬)
+    const streakData = JSON.parse(localStorage.getItem('my_eng_streak_'+currentUser.id) || '{"streak":0,"lastStudyDate":null}');
+    streak = streakData.streak;
+    lastStudyDate = streakData.lastStudyDate;
+  }
+  setSyncStatus('synced');
+  updateHome();
+  renderApiSection();
+}
+
+function saveStreakLocal() {
+  if (!currentUser) return;
+  localStorage.setItem('my_eng_streak_'+currentUser.id, JSON.stringify({ streak, lastStudyDate }));
+}
+
+async function insertItem(data) {
+  if (!currentUser) return null;
+  setSyncStatus('syncing');
+  const { data: row, error } = await sb.from('items').insert({
+    user_id: currentUser.id,
+    type: data.type, en: data.en, ko: data.ko,
+    example: data.example||'', tag: data.tag||'기타',
+    level: 0, next_review: today(), added_at: today()
+  }).select().single();
+  if (!error && row) { items.unshift(row); setSyncStatus('synced'); return row; }
+  setSyncStatus('');
+  return null;
+}
+
+async function updateItem(id, updates) {
+  if (!currentUser) return;
+  setSyncStatus('syncing');
+  await sb.from('items').update(updates).eq('id', id).eq('user_id', currentUser.id);
+  const idx = items.findIndex(i=>i.id===id);
+  if (idx>=0) items[idx] = {...items[idx], ...updates};
+  setSyncStatus('synced');
+}
+
+async function deleteItemDB(id) {
+  if (!currentUser) return;
+  setSyncStatus('syncing');
+  await sb.from('items').delete().eq('id', id).eq('user_id', currentUser.id);
+  items = items.filter(i=>i.id!==id);
+  setSyncStatus('synced');
+}
+
+function updateStreak() {
+  const t = today();
+  if (lastStudyDate === t) return;
+  const y = new Date(); y.setDate(y.getDate()-1);
+  const ys = y.toISOString().split('T')[0];
+  streak = lastStudyDate === ys ? streak+1 : 1;
+  lastStudyDate = t;
+  saveStreakLocal();
+}
+
+// ── 네비게이션 ────────────────────────────────────
+const navMap = {home:0,translate:1,add:2,review:3,words:4};
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if (navMap[name]!==undefined) document.querySelectorAll('.nav-btn')[navMap[name]].classList.add('active');
+  if (name==='translate') renderApiSection();
+  if (name==='review') renderReview();
+  if (name==='words') renderWords(wordTab);
+  updateHome();
+}
+
+function updateHome() {
+  document.getElementById('stat-expr').textContent = items.filter(i=>i.type==='expr').length;
+  document.getElementById('stat-sent').textContent = items.filter(i=>i.type==='sent').length;
+  const due = dueItems().length;
+  document.getElementById('stat-due').textContent = due;
+  document.getElementById('due-count').textContent = due;
+  document.getElementById('streak-display').textContent = '🔥 '+streak+'일 연속';
+  const el = document.getElementById('recent-list');
+  if (!items.length) { el.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요<br>번역하거나 직접 추가해보세요!</div>'; return; }
+  el.innerHTML = items.slice(0,5).map(renderItemRow).join('');
+}
+
+function renderItemRow(w) {
+  const lvl = w.level||0;
+  const cls = lvl===0?'level-new':lvl<4?'level-learning':'level-known';
+  const lbl = lvl===0?'NEW':lvl<4?'Lv.'+lvl:'✓';
+  const typePill = w.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>';
+  return `<div class="item-row">
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">${typePill}<span class="level-pill ${cls}">${lbl}</span></div>
+      <div class="item-en">${w.en}</div>
+      <div class="item-ko">${w.ko}</div>
+      ${w.example?`<div class="item-example">"${w.example}"</div>`:''}
+    </div>
+    <button class="delete-btn" onclick="deleteItem(${w.id})">✕</button>
+  </div>`;
+}
+
+// ── 번역 ──────────────────────────────────────────
+function renderApiSection() {
+  const sec = document.getElementById('api-key-section');
+  const form = document.getElementById('translate-form');
+  if (!sec || !form) return;
+  if (apiKey) {
+    sec.innerHTML = `<div class="api-connected"><span class="api-connected-label">✓ Anthropic API 연결됨</span><button class="api-reset-btn" onclick="resetApiKey()">키 변경</button></div>`;
+    form.style.display = 'flex';
+  } else {
+    sec.innerHTML = `<div class="api-banner">
+      <div class="api-banner-title">🔑 Anthropic API 키 필요</div>
+      <div class="api-banner-desc"><a href="https://console.anthropic.com" target="_blank" style="color:var(--blue);">console.anthropic.com</a>에서 발급받은 API 키를 입력해줘.<br>키는 이 기기에만 저장돼.</div>
+      <div class="api-key-row">
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." />
+        <button class="api-save-btn" onclick="submitApiKey()">저장</button>
+      </div>
+    </div>`;
+    form.style.display = 'none';
+  }
+}
+
+function submitApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('sk-ant-')) { alert('올바른 API 키 형식이 아니야. sk-ant-로 시작해야 해.'); return; }
+  apiKey = val; localStorage.setItem(API_KEY_SK, val); renderApiSection();
+}
+function resetApiKey() {
+  if (!confirm('API 키를 삭제할까?')) return;
+  apiKey = ''; localStorage.removeItem(API_KEY_SK); renderApiSection();
+}
+
+async function doTranslate() {
+  const text = document.getElementById('ko-input').value.trim();
+  if (!text || !apiKey) return;
+  const btn = document.getElementById('trans-btn');
+  btn.disabled = true;
+  document.getElementById('trans-result').style.display = 'none';
+  document.getElementById('trans-loading').style.display = 'block';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({
+        model:'claude-haiku-4-5-20251001', max_tokens:1000,
+        messages:[{role:'user',content:`한국어 문장을 자연스러운 영어로 번역해줘. JSON만 반환. 다른 텍스트 없이.
+{"translation":"영어 번역 전체 문장","pattern":"핵심 패턴/표현 (한국어, 짧게)","key_phrase":"가장 외워두면 좋은 영어 표현","key_phrase_ko":"그 표현의 한국어 의미","key_example":"key_phrase를 쓴 다른 예시 문장 (짧게)"}
+한국어: ${text}`}]
+      })
+    });
+    if (!resp.ok) { const e=await resp.json(); throw new Error(e.error?.message||resp.status); }
+    const data = await resp.json();
+    const r = JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+    document.getElementById('trans-loading').style.display = 'none';
+    document.getElementById('trans-result').style.display = 'block';
+    document.getElementById('trans-result').innerHTML = `
+      <div class="result-box">
+        <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:8px;">번역 결과</div>
+        <div class="result-en-text">${r.translation}</div>
+        <hr class="divider">
+        <div class="save-row" style="margin-bottom:10px;">
+          <div style="font-size:11px;color:var(--text2);">전체 문장 저장</div>
+          <button class="save-expr-btn" onclick="saveSentFromTrans('${esc(r.translation)}','${esc(text)}',this)">+ 문장 저장</button>
+        </div>
+        <hr class="divider">
+        <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:6px;">핵심 표현</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">${r.pattern}</div>
+        <div style="font-family:var(--font-mono);font-size:15px;color:var(--blue);margin-bottom:2px;">${r.key_phrase}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px;">${r.key_phrase_ko}</div>
+        <div style="font-size:11px;color:var(--text3);font-style:italic;margin-bottom:10px;">"${r.key_example}"</div>
+        <div class="save-row"><div></div><button class="save-expr-btn" onclick="saveExprFromTrans('${esc(r.key_phrase)}','${esc(r.key_phrase_ko)}','${esc(r.key_example)}',this)">+ 표현 저장</button></div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('trans-loading').style.display = 'none';
+    document.getElementById('trans-result').style.display = 'block';
+    document.getElementById('trans-result').innerHTML = `<div class="result-box"><div class="result-en-text" style="color:var(--red);">오류: ${e.message}</div></div>`;
+  }
+  btn.disabled = false;
+}
+
+function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+async function saveExprFromTrans(en,ko,example,btn) { await addItem({type:'expr',en,ko,example,tag:'번역'}); btn.textContent='✓ 저장됨'; btn.classList.add('saved'); }
+async function saveSentFromTrans(en,ko,btn) { await addItem({type:'sent',en,ko,example:'',tag:'번역'}); btn.textContent='✓ 저장됨'; btn.classList.add('saved'); }
+
+// ── 추가 ──────────────────────────────────────────
+let selTag = {expr:'업무', sent:'업무'};
+function toggleTag(el, form) {
+  el.closest('.add-section').querySelectorAll('.tag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); selTag[form]=el.dataset.tag;
+}
+async function addExpression() {
+  const en=document.getElementById('add-expr-en').value.trim();
+  const ko=document.getElementById('add-expr-ko').value.trim();
+  const ex=document.getElementById('add-expr-example').value.trim();
+  if (!en||!ko||!ex) { alert('영어 표현, 한국어 의미, 예시 문장을 모두 입력해주세요'); return; }
+  await addItem({type:'expr',en,ko,example:ex,tag:selTag.expr});
+  document.getElementById('add-expr-en').value='';
+  document.getElementById('add-expr-ko').value='';
+  document.getElementById('add-expr-example').value='';
+  showPage('home');
+}
+async function addSentence() {
+  const en=document.getElementById('add-sent-en').value.trim();
+  const ko=document.getElementById('add-sent-ko').value.trim();
+  if (!en||!ko) { alert('영어 문장과 한국어 의미를 입력해주세요'); return; }
+  await addItem({type:'sent',en,ko,example:'',tag:selTag.sent});
+  document.getElementById('add-sent-en').value='';
+  document.getElementById('add-sent-ko').value='';
+  showPage('home');
+}
+async function addItem(data) {
+  if (items.find(i=>i.en.toLowerCase()===data.en.toLowerCase())) return;
+  await insertItem(data);
+  updateHome();
+}
+async function deleteItem(id) {
+  await deleteItemDB(id);
+  updateHome();
+  renderWords(wordTab);
+}
+
+// ── 복습 ──────────────────────────────────────────
+let rQueue=[], rCurrent=null, rDone=0;
+function renderReview() { rQueue=[...dueItems()]; rDone=0; nextCard(); }
+function nextCard() {
+  const area = document.getElementById('review-area');
+  if (!rQueue.length) {
+    if (rDone>0) updateStreak();
+    area.innerHTML = rDone===0
+      ? `<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">오늘 복습 완료!</div><div class="done-sub">모든 카드를 다 봤어<br>내일 또 만나자</div></div>`
+      : `<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone}개 복습 완료!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak}일 연속 학습 중</div></div>`;
+    updateHome(); return;
+  }
+  rCurrent = rQueue.shift();
+  const total = rDone+rQueue.length+1;
+  const pct = Math.round((rDone/total)*100);
+  area.innerHTML = `
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:5px;"><span>${rDone+1} / ${total}</span><span>${pct}%</span></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
+      <span style="font-size:11px;color:var(--text3);align-self:center;">${rCurrent.tag}</span>
+    </div>
+    <div class="review-card">
+      <div class="rc-label">한국어 → 영어</div>
+      <div class="rc-main">${rCurrent.ko}</div>
+    </div>
+    <button class="flip-btn" style="margin-top:10px;" onclick="flipCard()">정답 보기</button>`;
+}
+function flipCard() {
+  const area = document.getElementById('review-area');
+  const total = rDone+rQueue.length+1;
+  const pct = Math.round((rDone/total)*100);
+  area.innerHTML = `
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:5px;"><span>${rDone+1} / ${total}</span><span>${pct}%</span></div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
+    </div>
+    <div class="review-card">
+      <div class="rc-label">정답</div>
+      <div class="rc-answer-main">${rCurrent.en}</div>
+      ${rCurrent.example?`<div class="rc-answer-example">"${rCurrent.example}"</div>`:''}
+    </div>
+    <div style="margin-top:10px;">
+      <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">얼마나 잘 기억했어?</div>
+      <div class="answer-row">
+        <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
+        <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
+        <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
+      </div>
+    </div>`;
+}
+async function rateCard(r) {
+  const newLevel = r===0?Math.max(0,(rCurrent.level||0)-1):r===1?(rCurrent.level||0):Math.min(6,(rCurrent.level||0)+1);
+  const newReview = srsNext(newLevel);
+  await updateItem(rCurrent.id, { level: newLevel, next_review: newReview });
+  rDone++; nextCard();
+}
+
+// ── 단어장 ────────────────────────────────────────
+let wordTab = 'all';
+function switchWordTab(el, tab) {
+  document.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); wordTab=tab; renderWords(tab);
+}
+function renderWords(tab) {
+  const list = document.getElementById('words-list');
+  const filtered = tab==='all'?items:items.filter(i=>i.type===tab);
+  if (!filtered.length) { list.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요</div>'; return; }
+  list.innerHTML = filtered.map(renderItemRow).join('');
+}
+
+// ── 서비스 워커 등록 ───────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ── 시작 ──────────────────────────────────────────
+initAuth();
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "MY·ENG",
+  "short_name": "MY·ENG",
+  "description": "나만의 영어 공부 앱",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f5f2",
+  "theme_color": "#2d6a2d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
