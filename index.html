@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -309,18 +310,20 @@
 
 <script>
 // ── Supabase 설정 ──────────────────────────────────
-const SUPABASE_URL = 'https://cubrnpnkgehyjhgxvoof.supabase.co';
+const SUPABASE_URL = 'https://cubrnpnkgehyjhgxvoo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_3_jMhWzY3PEWsLqTt4D9kQ_gULBI9QR';
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── 상태 ──────────────────────────────────────────
 const API_KEY_SK = 'my_eng_apikey';
+const API_PROVIDER_SK = 'my_eng_provider';
 let items = [];
 let streak = 0;
 let lastStudyDate = null;
 let currentUser = null;
 let apiKey = '';
+let apiProvider = 'openai'; // 'openai' or 'anthropic'
 
 // ── 유틸 ──────────────────────────────────────────
 function today() { return new Date().toISOString().split('T')[0]; }
@@ -384,6 +387,7 @@ function showApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   apiKey = localStorage.getItem(API_KEY_SK) || '';
+  apiProvider = localStorage.getItem(API_PROVIDER_SK) || 'openai';
   loadItems();
 }
 
@@ -502,14 +506,22 @@ function renderApiSection() {
   const form = document.getElementById('translate-form');
   if (!sec || !form) return;
   if (apiKey) {
-    sec.innerHTML = `<div class="api-connected"><span class="api-connected-label">✓ Anthropic API 연결됨</span><button class="api-reset-btn" onclick="resetApiKey()">키 변경</button></div>`;
+    const label = apiProvider === 'openai' ? '✓ OpenAI GPT 연결됨' : '✓ Anthropic Claude 연결됨';
+    sec.innerHTML = `<div class="api-connected"><span class="api-connected-label">${label}</span><button class="api-reset-btn" onclick="resetApiKey()">키 변경</button></div>`;
     form.style.display = 'flex';
   } else {
     sec.innerHTML = `<div class="api-banner">
-      <div class="api-banner-title">🔑 Anthropic API 키 필요</div>
-      <div class="api-banner-desc"><a href="https://console.anthropic.com" target="_blank" style="color:var(--blue);">console.anthropic.com</a>에서 발급받은 API 키를 입력해줘.<br>키는 이 기기에만 저장돼.</div>
+      <div class="api-banner-title">🔑 번역 API 키 설정</div>
+      <div class="api-banner-desc">둘 중 하나를 선택해서 입력해줘. 키는 이 기기에만 저장돼.</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button onclick="selectProvider('openai',this)" id="btn-openai" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--accent);background:var(--accent-light);color:var(--accent);font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:700;">GPT (OpenAI)</button>
+        <button onclick="selectProvider('anthropic',this)" id="btn-anthropic" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);">Claude (Anthropic)</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;" id="api-link-desc">
+        <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);">platform.openai.com</a>에서 발급 → API keys
+      </div>
       <div class="api-key-row">
-        <input type="password" id="api-key-input" placeholder="sk-ant-..." />
+        <input type="password" id="api-key-input" placeholder="sk-..." />
         <button class="api-save-btn" onclick="submitApiKey()">저장</button>
       </div>
     </div>`;
@@ -517,14 +529,37 @@ function renderApiSection() {
   }
 }
 
+let selectedProvider = 'openai';
+function selectProvider(provider, el) {
+  selectedProvider = provider;
+  document.getElementById('btn-openai').style.cssText = 'flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);';
+  document.getElementById('btn-anthropic').style.cssText = 'flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);';
+  el.style.cssText = 'flex:1;padding:8px;border-radius:8px;border:2px solid var(--accent);background:var(--accent-light);color:var(--accent);font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:700;';
+  const desc = document.getElementById('api-link-desc');
+  if (provider === 'openai') {
+    desc.innerHTML = '<a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);">platform.openai.com</a>에서 발급 → API keys';
+    document.getElementById('api-key-input').placeholder = 'sk-...';
+  } else {
+    desc.innerHTML = '<a href="https://console.anthropic.com" target="_blank" style="color:var(--blue);">console.anthropic.com</a>에서 발급 → API keys';
+    document.getElementById('api-key-input').placeholder = 'sk-ant-...';
+  }
+}
+
 function submitApiKey() {
   const val = document.getElementById('api-key-input').value.trim();
-  if (!val.startsWith('sk-ant-')) { alert('올바른 API 키 형식이 아니야. sk-ant-로 시작해야 해.'); return; }
-  apiKey = val; localStorage.setItem(API_KEY_SK, val); renderApiSection();
+  if (!val.startsWith('sk-')) { alert('올바른 API 키 형식이 아니야. sk-로 시작해야 해.'); return; }
+  apiKey = val;
+  apiProvider = selectedProvider;
+  localStorage.setItem(API_KEY_SK, val);
+  localStorage.setItem(API_PROVIDER_SK, selectedProvider);
+  renderApiSection();
 }
 function resetApiKey() {
   if (!confirm('API 키를 삭제할까?')) return;
-  apiKey = ''; localStorage.removeItem(API_KEY_SK); renderApiSection();
+  apiKey = ''; apiProvider = 'openai';
+  localStorage.removeItem(API_KEY_SK);
+  localStorage.removeItem(API_PROVIDER_SK);
+  renderApiSection();
 }
 
 async function doTranslate() {
@@ -534,20 +569,30 @@ async function doTranslate() {
   btn.disabled = true;
   document.getElementById('trans-result').style.display = 'none';
   document.getElementById('trans-loading').style.display = 'block';
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({
-        model:'claude-haiku-4-5-20251001', max_tokens:1000,
-        messages:[{role:'user',content:`한국어 문장을 자연스러운 영어로 번역해줘. JSON만 반환. 다른 텍스트 없이.
+  const prompt = `한국어 문장을 자연스러운 영어로 번역해줘. JSON만 반환. 다른 텍스트 없이.
 {"translation":"영어 번역 전체 문장","pattern":"핵심 패턴/표현 (한국어, 짧게)","key_phrase":"가장 외워두면 좋은 영어 표현","key_phrase_ko":"그 표현의 한국어 의미","key_example":"key_phrase를 쓴 다른 예시 문장 (짧게)"}
-한국어: ${text}`}]
-      })
-    });
-    if (!resp.ok) { const e=await resp.json(); throw new Error(e.error?.message||resp.status); }
-    const data = await resp.json();
-    const r = JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+한국어: ${text}`;
+  try {
+    let r;
+    if (apiProvider === 'openai') {
+      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+        body: JSON.stringify({ model:'gpt-4o-mini', max_tokens:1000, messages:[{role:'user',content:prompt}] })
+      });
+      if (!resp.ok) { const e=await resp.json(); throw new Error(e.error?.message||resp.status); }
+      const data = await resp.json();
+      r = JSON.parse(data.choices[0].message.content.replace(/```json|```/g,'').trim());
+    } else {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:1000, messages:[{role:'user',content:prompt}] })
+      });
+      if (!resp.ok) { const e=await resp.json(); throw new Error(e.error?.message||resp.status); }
+      const data = await resp.json();
+      r = JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+    }
     document.getElementById('trans-loading').style.display = 'none';
     document.getElementById('trans-result').style.display = 'block';
     document.getElementById('trans-result').innerHTML = `
