@@ -48,8 +48,8 @@
     .streak-badge { display: flex; align-items: center; gap: 5px; background: var(--accent-light); border: 1px solid rgba(45,106,45,0.2); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--accent); font-family: var(--font-mono); }
 
     /* NAV */
-    .nav { display: flex; gap: 4px; padding: 14px 20px 0; }
-    .nav-btn { flex: 1; padding: 9px 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); color: var(--text2); font-size: 11px; font-family: var(--font-body); cursor: pointer; transition: all 0.15s; text-align: center; box-shadow: var(--shadow); }
+    .nav { display: flex; gap: 3px; padding: 14px 20px 0; }
+    .nav-btn { flex: 1; padding: 8px 2px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); color: var(--text2); font-size: 10px; font-family: var(--font-body); cursor: pointer; transition: all 0.15s; text-align: center; box-shadow: var(--shadow); }
     .nav-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; box-shadow: none; }
 
     /* PAGES */
@@ -197,6 +197,7 @@
     <button class="nav-btn" onclick="showPage('add')">추가</button>
     <button class="nav-btn" onclick="showPage('review')">복습</button>
     <button class="nav-btn" onclick="showPage('words')">단어장</button>
+    <button class="nav-btn" onclick="showPage('sets')">세트</button>
   </div>
 
   <!-- HOME -->
@@ -289,6 +290,35 @@
       </div>
       <button class="add-submit-btn" onclick="addSentence()">+ 문장 추가하기</button>
     </div>
+
+    <!-- CSV 업로드 -->
+    <div class="add-section">
+      <div class="section-header">
+        <span style="font-size:16px;">📂</span>
+        <span style="font-size:13px;color:var(--text2);">CSV 파일로 대량 추가</span>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--text3);line-height:1.8;font-family:var(--font-mono);">
+        형식: type, en, ko, example, tag<br>
+        expr, get the ball rolling, 일을 시작하다, Let's get started., 업무<br>
+        sent, I'll keep you posted., 계속 알려줄게, , 업무
+      </div>
+      <button onclick="downloadCsvTemplate()" style="width:100%;background:none;border:1px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:10px;font-size:13px;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;transition:all 0.15s;"
+        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+        onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+        📥 양식 파일 다운로드 (.csv)
+      </button>
+      <div id="csv-drop-zone" onclick="document.getElementById('csv-file-input').click()"
+        style="border:2px dashed var(--border2);border-radius:var(--r);padding:24px;text-align:center;cursor:pointer;transition:all 0.15s;"
+        ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='var(--accent-light)'"
+        ondragleave="this.style.borderColor='var(--border2)';this.style.background='none'"
+        ondrop="handleCsvDrop(event)">
+        <div style="font-size:24px;margin-bottom:8px;">📄</div>
+        <div style="font-size:13px;color:var(--text2);">CSV 파일을 여기에 드래그하거나 클릭해서 선택</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">.csv 파일만 지원</div>
+      </div>
+      <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleCsvFile(this)" />
+      <div id="csv-preview" style="display:none;margin-top:12px;"></div>
+    </div>
   </div>
 
   <!-- REVIEW -->
@@ -307,6 +337,12 @@
       <div id="words-list"></div>
     </div>
   </div>
+
+  <!-- SETS -->
+  <div class="page" id="page-sets">
+    <div id="sets-main"><!-- 동적 렌더링 --></div>
+  </div>
+
 </div>
 
 <script>
@@ -410,6 +446,7 @@ async function loadItems() {
     lastStudyDate = streakData.lastStudyDate;
   }
   setSyncStatus('synced');
+  await loadSets();
   updateHome();
   renderApiSection();
 }
@@ -417,6 +454,43 @@ async function loadItems() {
 function saveStreakLocal() {
   if (!currentUser) return;
   localStorage.setItem('my_eng_streak_'+currentUser.id, JSON.stringify({ streak, lastStudyDate }));
+}
+
+// ── 세트 상태 ──────────────────────────────────────
+let sets = [];       // [{id, name, ...}]
+let itemSets = [];   // [{id, set_id, item_id}]
+
+async function loadSets() {
+  if (!currentUser) return;
+  const [s1, s2] = await Promise.all([
+    sb.from('sets').select('*').eq('user_id', currentUser.id).order('created_at'),
+    sb.from('item_sets').select('*').eq('user_id', currentUser.id)
+  ]);
+  if (!s1.error) sets = s1.data||[];
+  if (!s2.error) itemSets = s2.data||[];
+}
+async function createSet(name) {
+  const {data,error} = await sb.from('sets').insert({user_id:currentUser.id, name}).select().single();
+  if (!error && data) { sets.push(data); return data; }
+  return null;
+}
+async function deleteSet(id) {
+  await sb.from('sets').delete().eq('id',id).eq('user_id',currentUser.id);
+  sets = sets.filter(s=>s.id!==id);
+  itemSets = itemSets.filter(s=>s.set_id!==id);
+}
+async function addItemToSet(setId, itemId) {
+  if (itemSets.find(s=>s.set_id===setId&&s.item_id===itemId)) return;
+  const {data,error} = await sb.from('item_sets').insert({user_id:currentUser.id, set_id:setId, item_id:itemId}).select().single();
+  if (!error && data) itemSets.push(data);
+}
+async function removeItemFromSet(setId, itemId) {
+  await sb.from('item_sets').delete().eq('set_id',setId).eq('item_id',itemId).eq('user_id',currentUser.id);
+  itemSets = itemSets.filter(s=>!(s.set_id===setId&&s.item_id===itemId));
+}
+function getSetItems(setId) {
+  const ids = itemSets.filter(s=>s.set_id===setId).map(s=>s.item_id);
+  return items.filter(i=>ids.includes(i.id));
 }
 
 async function insertItem(data) {
@@ -461,7 +535,7 @@ function updateStreak() {
 }
 
 // ── 네비게이션 ────────────────────────────────────
-const navMap = {home:0,translate:1,add:2,review:3,words:4};
+const navMap = {home:0,translate:1,add:2,review:3,words:4,sets:5};
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -470,6 +544,7 @@ function showPage(name) {
   if (name==='translate') renderApiSection();
   if (name==='review') renderReview();
   if (name==='words') renderWords(wordTab);
+  if (name==='sets') renderSetsPage();
   updateHome();
 }
 
@@ -662,22 +737,127 @@ async function deleteItem(id) {
   renderWords(wordTab);
 }
 
+// ── CSV 업로드 ─────────────────────────────────────
+function downloadCsvTemplate() {
+  const content = [
+    'type,en,ko,example,tag',
+    'expr,get the ball rolling,일을 시작하다,Let\'s get the ball rolling on this project.,업무',
+    'expr,keep in mind,명심하다,Keep in mind that the deadline is Friday.,업무',
+    'expr,reach out,연락하다,Feel free to reach out if you need help.,비즈니스',
+    'sent,I\'ll keep you posted on any updates.,새로운 소식이 있으면 계속 알려줄게,,업무',
+    'sent,Let me get back to you on that.,그 부분은 확인 후 다시 연락할게,,비즈니스',
+  ].join('\n');
+  const blob = new Blob(['\uFEFF'+content], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'my-eng-template.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+function handleCsvDrop(e) {
+  e.preventDefault();
+  const zone = document.getElementById('csv-drop-zone');
+  zone.style.borderColor='var(--border2)'; zone.style.background='none';
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.csv')) processCsvFile(file);
+  else alert('.csv 파일만 업로드할 수 있어!');
+}
+function handleCsvFile(input) {
+  const file = input.files[0];
+  if (file) processCsvFile(file);
+}
+function processCsvFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g,'')));
+    // 헤더 제거 (type, en, ko ... 로 시작하면)
+    const dataRows = rows[0][0].toLowerCase()==='type' ? rows.slice(1) : rows;
+    const valid = dataRows.filter(r => r.length >= 3 && r[0] && r[1] && r[2]);
+    const invalid = dataRows.length - valid.length;
+    if (!valid.length) { alert('유효한 데이터가 없어! 형식을 확인해줘'); return; }
+    // 미리보기
+    const preview = document.getElementById('csv-preview');
+    preview.style.display = 'block';
+    preview.innerHTML = `
+      <div style="background:var(--accent-light);border:1px solid rgba(45,106,45,0.2);border-radius:var(--r);padding:12px;margin-bottom:10px;">
+        <div style="font-size:13px;color:var(--accent);font-weight:700;margin-bottom:4px;">📋 미리보기</div>
+        <div style="font-size:12px;color:var(--text2);">총 ${valid.length}개 항목 ${invalid>0?`(${invalid}개 형식 오류 제외)`:''}</div>
+      </div>
+      <div style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;">
+        ${valid.slice(0,5).map(r=>`
+          <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;">
+            <span class="type-pill ${r[0]==='expr'?'type-expr':'type-sent'}" style="margin-right:6px;">${r[0]==='expr'?'표현':'문장'}</span>
+            <span style="font-family:var(--font-mono);color:var(--text);">${r[1]}</span>
+            <span style="color:var(--text3);"> — ${r[2]}</span>
+          </div>`).join('')}
+        ${valid.length>5?`<div style="padding:8px 12px;font-size:11px;color:var(--text3);">... 외 ${valid.length-5}개</div>`:''}
+      </div>
+      <button onclick="importCsvData(${JSON.stringify(valid).replace(/"/g,'&quot;')})" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);">
+        ${valid.length}개 전체 추가하기
+      </button>`;
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+async function importCsvData(rows) {
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = '추가 중...';
+  let added = 0, skipped = 0;
+  for (const r of rows) {
+    const type = r[0]==='expr'?'expr':'sent';
+    const en = r[1], ko = r[2], example = r[3]||'', tag = r[4]||'기타';
+    if (items.find(i=>i.en.toLowerCase()===en.toLowerCase())) { skipped++; continue; }
+    const row = await insertItem({type, en, ko, example, tag});
+    if (row) added++;
+    btn.textContent = `추가 중... ${added}/${rows.length}`;
+  }
+  updateHome();
+  document.getElementById('csv-preview').innerHTML = `
+    <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:var(--r);padding:14px;text-align:center;">
+      <div style="font-size:16px;margin-bottom:4px;">✅ 완료!</div>
+      <div style="font-size:13px;color:var(--green);">${added}개 추가됨 ${skipped>0?`/ ${skipped}개 중복 건너뜀`:''}</div>
+    </div>`;
+  document.getElementById('csv-file-input').value='';
+}
+
 // ── 복습 ──────────────────────────────────────────
 let rQueue=[], rCurrent=null, rDone=0;
-function renderReview() { rQueue=[...dueItems()]; rDone=0; nextCard(); }
-function nextCard() {
+function renderReview() {
+  const t = today();
+  const pool = reviewMode==='all'
+    ? items.filter(w=>!w.next_review||w.next_review<=t)
+    : getSetItems(reviewMode).filter(w=>!w.next_review||w.next_review<=t);
+  rQueue=[...pool]; rDone=0;
+  // 세트 복습이면 헤더 표시
   const area = document.getElementById('review-area');
+  if (reviewMode!=='all') {
+    const set = sets.find(s=>s.id===reviewMode);
+    area.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <button onclick="reviewMode='all';showPage('sets')" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;">← 세트로</button>
+      <div style="font-size:12px;color:var(--text2);">${set?.name||''} 복습 중</div>
+    </div>`;
+    area.innerHTML += '<div id="review-cards"></div>';
+    nextCard(true);
+  } else {
+    nextCard(false);
+  }
+}
+function nextCard(useSubContainer) {
+  const area = useSubContainer
+    ? document.getElementById('review-cards') || document.getElementById('review-area')
+    : document.getElementById('review-area');
   if (!rQueue.length) {
     if (rDone>0) updateStreak();
-    area.innerHTML = rDone===0
-      ? `<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">오늘 복습 완료!</div><div class="done-sub">모든 카드를 다 봤어<br>내일 또 만나자</div></div>`
+    const html = rDone===0
+      ? `<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">복습 완료!</div><div class="done-sub">모든 카드를 다 봤어<br>내일 또 만나자</div></div>`
       : `<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone}개 복습 완료!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak}일 연속 학습 중</div></div>`;
+    if (useSubContainer) area.innerHTML = html;
+    else area.innerHTML = html;
     updateHome(); return;
   }
   rCurrent = rQueue.shift();
   const total = rDone+rQueue.length+1;
   const pct = Math.round((rDone/total)*100);
-  area.innerHTML = `
+  const cardHtml = `
     <div style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:5px;"><span>${rDone+1} / ${total}</span><span>${pct}%</span></div>
       <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
@@ -690,10 +870,14 @@ function nextCard() {
       <div class="rc-label">한국어 → 영어</div>
       <div class="rc-main">${rCurrent.ko}</div>
     </div>
-    <button class="flip-btn" style="margin-top:10px;" onclick="flipCard()">정답 보기</button>`;
+    <button class="flip-btn" style="margin-top:10px;" onclick="flipCard(${useSubContainer})">정답 보기</button>`;
+  area.innerHTML = cardHtml;
 }
-function flipCard() {
-  const area = document.getElementById('review-area');
+
+function flipCard(useSubContainer) {
+  const area = useSubContainer
+    ? document.getElementById('review-cards') || document.getElementById('review-area')
+    : document.getElementById('review-area');
   const total = rDone+rQueue.length+1;
   const pct = Math.round((rDone/total)*100);
   area.innerHTML = `
@@ -712,17 +896,18 @@ function flipCard() {
     <div style="margin-top:10px;">
       <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">얼마나 잘 기억했어?</div>
       <div class="answer-row">
-        <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
-        <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
-        <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
+        <button class="ans-btn ans-hard" onclick="rateCard(0,${useSubContainer})">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
+        <button class="ans-btn ans-ok" onclick="rateCard(1,${useSubContainer})">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
+        <button class="ans-btn ans-easy" onclick="rateCard(2,${useSubContainer})">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
       </div>
     </div>`;
 }
-async function rateCard(r) {
+
+async function rateCard(r, useSubContainer) {
   const newLevel = r===0?Math.max(0,(rCurrent.level||0)-1):r===1?(rCurrent.level||0):Math.min(6,(rCurrent.level||0)+1);
   const newReview = srsNext(newLevel);
   await updateItem(rCurrent.id, { level: newLevel, next_review: newReview });
-  rDone++; nextCard();
+  rDone++; nextCard(useSubContainer||false);
 }
 
 // ── 단어장 ────────────────────────────────────────
@@ -736,6 +921,151 @@ function renderWords(tab) {
   const filtered = tab==='all'?items:items.filter(i=>i.type===tab);
   if (!filtered.length) { list.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요</div>'; return; }
   list.innerHTML = filtered.map(renderItemRow).join('');
+}
+
+// ── 세트 페이지 ────────────────────────────────────
+let currentSetId = null; // null = 목록, number = 세트 상세
+
+function renderSetsPage() {
+  if (currentSetId !== null) renderSetDetail(currentSetId);
+  else renderSetsList();
+}
+
+function renderSetsList() {
+  const el = document.getElementById('sets-main');
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);">내 세트</div>
+      <button onclick="promptCreateSet()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:700;">+ 새 세트</button>
+    </div>
+    ${sets.length===0
+      ? `<div class="empty-state">아직 세트가 없어요<br>"+ 새 세트" 버튼으로 만들어봐!</div>`
+      : sets.map(s => {
+          const cnt = itemSets.filter(x=>x.set_id===s.id).length;
+          const due = getSetItems(s.id).filter(i=>!i.next_review||i.next_review<=today()).length;
+          return `<div class="card" style="margin-bottom:10px;cursor:pointer;" onclick="openSet(${s.id})">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">${s.name}</div>
+                <div style="display:flex;gap:8px;">
+                  <span style="font-size:11px;color:var(--text3);font-family:var(--font-mono);">${cnt}개 카드</span>
+                  ${due>0?`<span style="font-size:11px;color:var(--accent);font-family:var(--font-mono);">복습 ${due}개</span>`:''}
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                ${due>0?`<button onclick="event.stopPropagation();startSetReview(${s.id})" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:11px;cursor:pointer;font-family:var(--font-body);font-weight:700;">복습</button>`:''}
+                <button onclick="event.stopPropagation();confirmDeleteSet(${s.id})" style="background:none;border:1px solid var(--border2);color:var(--text3);border-radius:8px;padding:7px 10px;font-size:11px;cursor:pointer;">삭제</button>
+              </div>
+            </div>
+          </div>`;
+        }).join('')
+    }`;
+}
+
+async function promptCreateSet() {
+  const name = prompt('세트 이름을 입력해줘\n예: 비즈니스 표현, 테크 용어, 업무 1-1');
+  if (!name || !name.trim()) return;
+  await createSet(name.trim());
+  renderSetsList();
+}
+
+async function confirmDeleteSet(id) {
+  const s = sets.find(x=>x.id===id);
+  if (!confirm(`"${s?.name}" 세트를 삭제할까?\n(카드 자체는 삭제되지 않아)`)) return;
+  await deleteSet(id);
+  renderSetsList();
+}
+
+function openSet(id) {
+  currentSetId = id;
+  renderSetDetail(id);
+}
+
+function renderSetDetail(setId) {
+  const set = sets.find(s=>s.id===setId);
+  if (!set) { currentSetId=null; renderSetsList(); return; }
+  const setItemIds = itemSets.filter(s=>s.set_id===setId).map(s=>s.item_id);
+  const setItemList = items.filter(i=>setItemIds.includes(i.id));
+  const notInSet = items.filter(i=>!setItemIds.includes(i.id));
+  const due = setItemList.filter(i=>!i.next_review||i.next_review<=today()).length;
+  const el = document.getElementById('sets-main');
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <button onclick="currentSetId=null;renderSetsList()" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;">← 목록</button>
+      <div style="font-size:15px;font-weight:700;color:var(--text);flex:1;">${set.name}</div>
+      ${due>0?`<button onclick="startSetReview(${setId})" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;font-weight:700;">복습 시작 (${due})</button>`:''}
+    </div>
+
+    <!-- 이 세트의 카드들 -->
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-title">세트 카드 (${setItemList.length}개)</div>
+      ${setItemList.length===0
+        ? `<div class="empty-state" style="padding:16px;">아직 카드가 없어요<br>아래에서 추가해봐!</div>`
+        : setItemList.map(w=>{
+            const lvl=w.level||0;
+            const cls=lvl===0?'level-new':lvl<4?'level-learning':'level-known';
+            const lbl=lvl===0?'NEW':lvl<4?'Lv.'+lvl:'✓';
+            const typePill=w.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>';
+            return `<div class="item-row">
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">${typePill}<span class="level-pill ${cls}">${lbl}</span></div>
+                <div class="item-en">${w.en}</div>
+                <div class="item-ko">${w.ko}</div>
+              </div>
+              <button onclick="removeFromSet(${setId},${w.id})" style="background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;flex-shrink:0;">제거</button>
+            </div>`;
+          }).join('')
+      }
+    </div>
+
+    <!-- 추가 가능한 카드 -->
+    ${notInSet.length>0?`
+    <div class="card">
+      <div class="card-title">카드 추가하기 (${notInSet.length}개)</div>
+      <input type="text" id="set-search" placeholder="검색..." oninput="filterSetCandidates(${setId})" style="margin-bottom:10px;" />
+      <div id="set-candidates">
+        ${notInSet.slice(0,20).map(w=>`
+          <div class="item-row">
+            <div style="flex:1;min-width:0;">
+              <div class="item-en">${w.en}</div>
+              <div class="item-ko">${w.ko}</div>
+            </div>
+            <button onclick="addToSet(${setId},${w.id})" style="background:var(--accent-light);border:1px solid rgba(45,106,45,0.2);color:var(--accent);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;flex-shrink:0;font-weight:700;">+ 추가</button>
+          </div>`).join('')}
+        ${notInSet.length>20?`<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px;">검색으로 더 찾아봐</div>`:''}
+      </div>
+    </div>`:''}`;
+}
+
+function filterSetCandidates(setId) {
+  const q = document.getElementById('set-search').value.toLowerCase();
+  const setItemIds = itemSets.filter(s=>s.set_id===setId).map(s=>s.item_id);
+  const notInSet = items.filter(i=>!setItemIds.includes(i.id));
+  const filtered = q ? notInSet.filter(i=>i.en.toLowerCase().includes(q)||i.ko.toLowerCase().includes(q)) : notInSet.slice(0,20);
+  document.getElementById('set-candidates').innerHTML = filtered.slice(0,20).map(w=>`
+    <div class="item-row">
+      <div style="flex:1;min-width:0;">
+        <div class="item-en">${w.en}</div>
+        <div class="item-ko">${w.ko}</div>
+      </div>
+      <button onclick="addToSet(${setId},${w.id})" style="background:var(--accent-light);border:1px solid rgba(45,106,45,0.2);color:var(--accent);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;flex-shrink:0;font-weight:700;">+ 추가</button>
+    </div>`).join('');
+}
+
+async function addToSet(setId, itemId) {
+  await addItemToSet(setId, itemId);
+  renderSetDetail(setId);
+}
+async function removeFromSet(setId, itemId) {
+  await removeItemFromSet(setId, itemId);
+  renderSetDetail(setId);
+}
+
+// ── 세트 복습 ──────────────────────────────────────
+let reviewMode = 'all'; // 'all' or setId
+function startSetReview(setId) {
+  reviewMode = setId;
+  showPage('review');
 }
 
 // ── 서비스 워커 등록 ───────────────────────────────
