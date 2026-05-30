@@ -434,13 +434,18 @@ async function handleAuth() {
   const btn=document.getElementById('auth-submit-btn');
   if(!email||!password){msg.textContent='이메일과 비밀번호를 입력해줘';msg.className='auth-msg error';return;}
   btn.disabled=true; msg.textContent='처리 중...'; msg.className='auth-msg';
-  let {error}=await sb.auth.signInWithPassword({email,password});
-  if(error&&error.message.includes('Invalid login credentials')){
-    const res=await sb.auth.signUp({email,password});
-    if(res.error){msg.textContent=res.error.message;msg.className='auth-msg error';btn.disabled=false;return;}
-    msg.textContent='계정이 만들어졌어! 로그인해줘';msg.className='auth-msg success';btn.disabled=false;return;
+  // 로그인 시도
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(!error){btn.disabled=false;return;} // 성공 시 onAuthStateChange가 처리
+  // 로그인 실패 시 오류 메시지
+  if(error.message.includes('Invalid login credentials')){
+    msg.textContent='이메일 또는 비밀번호가 틀렸어';msg.className='auth-msg error';
+  } else if(error.message.includes('Email not confirmed')){
+    msg.textContent='이메일 인증이 필요해. 받은 메일함을 확인해줘';msg.className='auth-msg error';
+  } else {
+    msg.textContent=error.message;msg.className='auth-msg error';
   }
-  if(error){msg.textContent=error.message;msg.className='auth-msg error';btn.disabled=false;}
+  btn.disabled=false;
 }
 async function handleLogout(){await sb.auth.signOut();items=[];decks=[];sets=[];itemSets=[];streak=0;lastStudyDate=null;}
 function showApp(){
