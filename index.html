@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -17,167 +16,188 @@
     @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Gowun+Dodum&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     :root {
-      --bg: #f5f5f2; --surface: #ffffff; --surface2: #f9f9f7;
+      --bg: #f5f5f2; --surface: #fff; --surface2: #f9f9f7;
       --border: rgba(0,0,0,0.07); --border2: rgba(0,0,0,0.14);
       --accent: #2d6a2d; --accent-light: #e8f4e8;
       --text: #1a1a1a; --text2: #666; --text3: #aaa;
       --red: #d94f4f; --green: #2a9d5c; --blue: #2563a8; --yellow: #b87d00; --purple: #6b4fa0;
       --font-mono: 'DM Mono', monospace; --font-body: 'Gowun Dodum', sans-serif;
-      --r: 10px; --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+      --r: 10px; --shadow: 0 1px 3px rgba(0,0,0,0.07);
     }
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overscroll-behavior: none; }
     #app { display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
     /* AUTH */
-    #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 24px; gap: 24px; }
-    .auth-logo { font-family: var(--font-mono); font-size: 28px; color: var(--accent); letter-spacing: 0.15em; font-weight: 500; }
-    .auth-desc { font-size: 14px; color: var(--text2); text-align: center; line-height: 1.7; }
-    .auth-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; width: 100%; max-width: 360px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; }
-    .auth-title { font-size: 13px; color: var(--text2); margin-bottom: 4px; }
-    .auth-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--font-body); font-size: 15px; padding: 12px 14px; outline: none; transition: border-color 0.15s; }
-    .auth-input:focus { border-color: var(--accent); }
-    .auth-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--r); padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
-    .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .auth-msg { font-size: 13px; text-align: center; min-height: 20px; }
-    .auth-msg.success { color: var(--green); }
-    .auth-msg.error { color: var(--red); }
+    #auth-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:40px 24px; gap:24px; }
+    .auth-logo { font-family:var(--font-mono); font-size:28px; color:var(--accent); letter-spacing:0.15em; font-weight:500; }
+    .auth-desc { font-size:14px; color:var(--text2); text-align:center; line-height:1.7; }
+    .auth-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; width:100%; max-width:360px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px; }
+    .auth-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:var(--font-body); font-size:15px; padding:12px 14px; outline:none; transition:border-color 0.15s; }
+    .auth-input:focus { border-color:var(--accent); }
+    .auth-btn { width:100%; background:var(--accent); color:#fff; border:none; border-radius:var(--r); padding:14px; font-size:15px; font-weight:700; cursor:pointer; font-family:var(--font-body); }
+    .auth-btn:disabled { opacity:0.5; }
+    .auth-msg { font-size:13px; text-align:center; min-height:20px; }
+    .auth-msg.success { color:var(--green); } .auth-msg.error { color:var(--red); }
 
-    /* HEADER */
-    .header { padding: 20px 20px 0; display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-family: var(--font-mono); font-size: 13px; color: var(--accent); letter-spacing: 0.1em; font-weight: 500; }
-    .streak-badge { display: flex; align-items: center; gap: 5px; background: var(--accent-light); border: 1px solid rgba(45,106,45,0.2); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--accent); font-family: var(--font-mono); }
+    /* LAYOUT */
+    .header { padding:20px 20px 0; display:flex; justify-content:space-between; align-items:center; }
+    .logo { font-family:var(--font-mono); font-size:13px; color:var(--accent); letter-spacing:0.1em; font-weight:500; }
+    .streak-badge { display:flex; align-items:center; gap:5px; background:var(--accent-light); border:1px solid rgba(45,106,45,0.2); border-radius:20px; padding:5px 12px; font-size:12px; color:var(--accent); font-family:var(--font-mono); }
+    .nav { display:flex; gap:3px; padding:14px 20px 0; }
+    .nav-btn { flex:1; padding:8px 2px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r); color:var(--text2); font-size:10px; font-family:var(--font-body); cursor:pointer; transition:all 0.15s; text-align:center; box-shadow:var(--shadow); }
+    .nav-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+    .page { display:none; flex:1; padding:14px 20px 28px; flex-direction:column; gap:12px; }
+    .page.active { display:flex; }
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; box-shadow:var(--shadow); }
+    .card-title { font-size:10px; color:var(--text3); letter-spacing:0.08em; text-transform:uppercase; font-family:var(--font-mono); margin-bottom:12px; }
 
-    /* NAV */
-    .nav { display: flex; gap: 3px; padding: 14px 20px 0; }
-    .nav-btn { flex: 1; padding: 8px 2px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); color: var(--text2); font-size: 10px; font-family: var(--font-body); cursor: pointer; transition: all 0.15s; text-align: center; box-shadow: var(--shadow); }
-    .nav-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; box-shadow: none; }
+    /* HOME */
+    .stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px 12px; text-align:center; box-shadow:var(--shadow); }
+    .stat-num { font-family:var(--font-mono); font-size:24px; font-weight:500; color:var(--accent); }
+    .stat-label { font-size:10px; color:var(--text3); margin-top:3px; }
+    .due-banner { background:var(--accent); border-radius:var(--r); padding:16px 18px; display:flex; justify-content:space-between; align-items:center; }
+    .due-count { font-family:var(--font-mono); font-size:28px; color:#fff; }
+    .due-label { font-size:12px; color:rgba(255,255,255,0.75); margin-top:2px; }
+    .start-btn { background:#fff; color:var(--accent); border:none; border-radius:8px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer; font-family:var(--font-body); }
 
-    /* PAGES */
-    .page { display: none; flex: 1; padding: 14px 20px 28px; flex-direction: column; gap: 12px; }
-    .page.active { display: flex; }
+    /* PILLS */
+    .type-pill { display:inline-flex; align-items:center; font-size:10px; font-family:var(--font-mono); border-radius:20px; padding:3px 9px; }
+    .type-expr { background:#dbeafe; color:var(--blue); border:1px solid #bfdbfe; }
+    .type-sent { background:#ede9fe; color:var(--purple); border:1px solid #ddd6fe; }
+    .level-pill { font-size:10px; font-family:var(--font-mono); border-radius:20px; padding:3px 9px; }
+    .level-new { background:#dbeafe; color:var(--blue); }
+    .level-learning { background:#fef3c7; color:var(--yellow); }
+    .level-known { background:#d1fae5; color:var(--green); }
 
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; box-shadow: var(--shadow); }
-    .card-title { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--font-mono); margin-bottom: 12px; }
+    /* ITEMS */
+    .item-row { display:flex; justify-content:space-between; align-items:flex-start; padding:11px 0; border-bottom:1px solid var(--border); gap:8px; }
+    .item-row:last-child { border-bottom:none; }
+    .item-en { font-family:var(--font-mono); font-size:13px; color:var(--text); line-height:1.4; }
+    .item-ko { font-size:12px; color:var(--text2); margin-top:3px; }
+    .item-example { font-size:11px; color:var(--text3); margin-top:4px; font-style:italic; line-height:1.5; }
 
-    .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 12px; text-align: center; box-shadow: var(--shadow); }
-    .stat-num { font-family: var(--font-mono); font-size: 24px; font-weight: 500; color: var(--accent); }
-    .stat-label { font-size: 10px; color: var(--text3); margin-top: 3px; }
+    /* TABS */
+    .sub-tabs { display:flex; gap:6px; flex-wrap:wrap; }
+    .sub-tab { padding:7px 14px; background:var(--surface); border:1px solid var(--border); border-radius:20px; color:var(--text2); font-size:12px; font-family:var(--font-body); cursor:pointer; transition:all 0.15s; box-shadow:var(--shadow); }
+    .sub-tab.active { background:var(--text); border-color:var(--text); color:#fff; }
 
-    .due-banner { background: var(--accent); border-radius: var(--r); padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; }
-    .due-count { font-family: var(--font-mono); font-size: 28px; color: #fff; }
-    .due-label { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
-    .start-btn { background: #fff; color: var(--accent); border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
-
-    .type-pill { display: inline-flex; align-items: center; font-size: 10px; font-family: var(--font-mono); border-radius: 20px; padding: 3px 9px; }
-    .type-expr { background: #dbeafe; color: var(--blue); border: 1px solid #bfdbfe; }
-    .type-sent { background: #ede9fe; color: var(--purple); border: 1px solid #ddd6fe; }
-    .level-pill { font-size: 10px; font-family: var(--font-mono); border-radius: 20px; padding: 3px 9px; }
-    .level-new { background: #dbeafe; color: var(--blue); }
-    .level-learning { background: #fef3c7; color: var(--yellow); }
-    .level-known { background: #d1fae5; color: var(--green); }
-
-    .item-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--border); gap: 8px; }
-    .item-row:last-child { border-bottom: none; }
-    .item-en { font-family: var(--font-mono); font-size: 13px; color: var(--text); line-height: 1.4; }
-    .item-ko { font-size: 12px; color: var(--text2); margin-top: 3px; }
-    .item-example { font-size: 11px; color: var(--text3); margin-top: 4px; font-style: italic; line-height: 1.5; }
-
-    .sub-tabs { display: flex; gap: 6px; }
-    .sub-tab { padding: 7px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; color: var(--text2); font-size: 12px; font-family: var(--font-body); cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow); }
-    .sub-tab.active { background: var(--text); border-color: var(--text); color: #fff; }
-
-    .add-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); }
-    .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-    .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-    .input-label { font-size: 10px; color: var(--text3); font-family: var(--font-mono); letter-spacing: 0.06em; }
-    input[type=text], input[type=password], input[type=email], textarea {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
-      color: var(--text); font-family: var(--font-body); font-size: 14px; padding: 10px 12px;
-      outline: none; transition: border-color 0.15s;
+    /* FORMS */
+    .add-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px; box-shadow:var(--shadow); }
+    .section-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+    .input-group { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+    .input-label { font-size:10px; color:var(--text3); font-family:var(--font-mono); letter-spacing:0.06em; }
+    input[type=text], input[type=password], input[type=email], textarea, select {
+      width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+      color:var(--text); font-family:var(--font-body); font-size:14px; padding:10px 12px; outline:none; transition:border-color 0.15s;
     }
-    textarea { resize: none; line-height: 1.6; }
-    input:focus, textarea:focus { border-color: var(--accent); }
-    input::placeholder, textarea::placeholder { color: var(--text3); }
-    .add-submit-btn { width: 100%; background: none; border: 1.5px dashed var(--border2); color: var(--text2); border-radius: var(--r); padding: 12px; font-size: 13px; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; margin-top: 4px; }
-    .add-submit-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    textarea { resize:none; line-height:1.6; }
+    input:focus, textarea:focus, select:focus { border-color:var(--accent); }
+    input::placeholder, textarea::placeholder { color:var(--text3); }
+    .add-submit-btn { width:100%; background:none; border:1.5px dashed var(--border2); color:var(--text2); border-radius:var(--r); padding:12px; font-size:13px; cursor:pointer; font-family:var(--font-body); transition:all 0.15s; margin-top:4px; }
+    .add-submit-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+    .tag { font-size:11px; font-family:var(--font-mono); background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:3px 10px; color:var(--text2); cursor:pointer; transition:all 0.15s; }
+    .tag.active { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+    .tag-row { display:flex; gap:6px; flex-wrap:wrap; }
 
-    .trans-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); color: var(--text); font-family: var(--font-body); font-size: 15px; padding: 14px; resize: none; outline: none; transition: border-color 0.15s; line-height: 1.6; }
-    .trans-textarea:focus { border-color: var(--accent); }
-    .trans-textarea::placeholder { color: var(--text3); }
-    .translate-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--r); padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: var(--font-body); }
-    .translate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .result-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); }
-    .result-en-text { font-family: var(--font-mono); font-size: 15px; color: var(--text); line-height: 1.7; }
-    .divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
-    .save-row { display: flex; justify-content: space-between; align-items: center; }
-    .save-expr-btn { background: none; border: 1px solid var(--border2); color: var(--text2); border-radius: 8px; padding: 7px 12px; font-size: 11px; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
-    .save-expr-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .save-expr-btn.saved { border-color: var(--green); color: var(--green); background: #d1fae5; }
+    /* TRANSLATE */
+    .trans-textarea { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r); color:var(--text); font-family:var(--font-body); font-size:15px; padding:14px; resize:none; outline:none; transition:border-color 0.15s; line-height:1.6; }
+    .trans-textarea:focus { border-color:var(--accent); }
+    .trans-textarea::placeholder { color:var(--text3); }
+    .translate-btn { width:100%; background:var(--accent); color:#fff; border:none; border-radius:var(--r); padding:13px; font-size:15px; font-weight:700; cursor:pointer; font-family:var(--font-body); }
+    .translate-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .result-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px; box-shadow:var(--shadow); }
+    .result-en-text { font-family:var(--font-mono); font-size:15px; color:var(--text); line-height:1.7; }
+    .divider { border:none; border-top:1px solid var(--border); margin:12px 0; }
+    .save-row { display:flex; justify-content:space-between; align-items:center; }
+    .save-expr-btn { background:none; border:1px solid var(--border2); color:var(--text2); border-radius:8px; padding:7px 12px; font-size:11px; cursor:pointer; font-family:var(--font-body); transition:all 0.15s; }
+    .save-expr-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .save-expr-btn.saved { border-color:var(--green); color:var(--green); background:#d1fae5; }
+    .api-banner { background:#fffbeb; border:1px solid #fcd34d; border-radius:var(--r); padding:14px 16px; }
+    .api-banner-title { font-size:12px; color:var(--yellow); font-family:var(--font-mono); margin-bottom:6px; }
+    .api-banner-desc { font-size:12px; color:var(--text2); margin-bottom:10px; line-height:1.6; }
+    .api-key-row { display:flex; gap:8px; }
+    .api-key-row input { flex:1; font-family:var(--font-mono); font-size:12px; }
+    .api-save-btn { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 14px; font-size:12px; cursor:pointer; font-family:var(--font-body); white-space:nowrap; font-weight:700; }
+    .api-connected { background:#f0fdf4; border:1px solid #86efac; border-radius:var(--r); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
+    .api-connected-label { font-size:12px; color:var(--green); font-family:var(--font-mono); }
+    .api-reset-btn { background:none; border:1px solid #86efac; color:var(--green); border-radius:6px; padding:5px 10px; font-size:11px; cursor:pointer; }
 
-    /* API key banner */
-    .api-banner { background: #fffbeb; border: 1px solid #fcd34d; border-radius: var(--r); padding: 14px 16px; }
-    .api-banner-title { font-size: 12px; color: var(--yellow); font-family: var(--font-mono); margin-bottom: 6px; }
-    .api-banner-desc { font-size: 12px; color: var(--text2); margin-bottom: 10px; line-height: 1.6; }
-    .api-key-row { display: flex; gap: 8px; }
-    .api-key-row input { flex: 1; font-family: var(--font-mono); font-size: 12px; }
-    .api-save-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 10px 14px; font-size: 12px; cursor: pointer; font-family: var(--font-body); white-space: nowrap; font-weight: 700; }
-    .api-connected { background: #f0fdf4; border: 1px solid #86efac; border-radius: var(--r); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
-    .api-connected-label { font-size: 12px; color: var(--green); font-family: var(--font-mono); }
-    .api-reset-btn { background: none; border: 1px solid #86efac; color: var(--green); border-radius: 6px; padding: 5px 10px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
-
-    .loading-dots { display: flex; gap: 6px; align-items: center; }
-    .dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: bounce 0.9s infinite; }
-    .dot:nth-child(2) { animation-delay: 0.15s; }
-    .dot:nth-child(3) { animation-delay: 0.3s; }
+    /* LOADING */
+    .loading-dots { display:flex; gap:6px; align-items:center; }
+    .dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:bounce 0.9s infinite; }
+    .dot:nth-child(2) { animation-delay:0.15s; } .dot:nth-child(3) { animation-delay:0.3s; }
     @keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.3} 40%{transform:scale(1);opacity:1} }
 
-    .review-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px 22px; text-align: center; min-height: 200px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; box-shadow: var(--shadow); }
-    .review-card::before { content:''; position:absolute; top:-40px; right:-40px; width:120px; height:120px; background: var(--accent-light); border-radius:50%; }
-    .rc-label { font-size: 10px; color: var(--text3); font-family: var(--font-mono); margin-bottom: 16px; letter-spacing: 0.08em; }
-    .rc-main { font-family: var(--font-mono); font-size: 22px; color: var(--text); line-height: 1.4; position: relative; }
-    .rc-answer-main { font-family: var(--font-mono); font-size: 20px; color: var(--accent); line-height: 1.4; margin-bottom: 8px; position: relative; }
-    .rc-answer-example { font-size: 12px; color: var(--text2); font-style: italic; line-height: 1.6; position: relative; }
-    .flip-btn { width: 100%; background: var(--surface); border: 1px solid var(--border2); color: var(--text2); border-radius: var(--r); padding: 11px; font-size: 13px; cursor: pointer; font-family: var(--font-body); box-shadow: var(--shadow); }
-    .answer-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .ans-btn { padding: 11px 6px; border-radius: var(--r); border: 1px solid; font-size: 12px; cursor: pointer; font-family: var(--font-body); line-height: 1.4; }
-    .ans-hard { background: #fee2e2; border-color: #fca5a5; color: var(--red); }
-    .ans-ok { background: #fef3c7; border-color: #fcd34d; color: var(--yellow); }
-    .ans-easy { background: #d1fae5; border-color: #6ee7b7; color: var(--green); }
-    .progress-bar-wrap { background: var(--border); border-radius: 4px; height: 3px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s; }
-    .done-box { text-align: center; padding: 48px 20px; }
-    .done-emoji { font-size: 40px; margin-bottom: 14px; }
-    .done-title { font-size: 20px; color: var(--text); margin-bottom: 6px; }
-    .done-sub { font-size: 13px; color: var(--text2); line-height: 1.7; }
-    .empty-state { text-align: center; padding: 32px 16px; color: var(--text3); font-size: 13px; line-height: 1.7; }
-    .delete-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 13px; padding: 4px 6px; flex-shrink: 0; }
-    .delete-btn:hover { color: var(--red); }
-    .tag { font-size: 11px; font-family: var(--font-mono); background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; color: var(--text2); cursor: pointer; transition: all 0.15s; }
-    .tag.active { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
-    .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    /* REVIEW */
+    .review-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px 22px; text-align:center; min-height:200px; display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; box-shadow:var(--shadow); }
+    .review-card::before { content:''; position:absolute; top:-40px; right:-40px; width:120px; height:120px; background:var(--accent-light); border-radius:50%; }
+    .rc-label { font-size:10px; color:var(--text3); font-family:var(--font-mono); margin-bottom:16px; letter-spacing:0.08em; }
+    .rc-main { font-family:var(--font-mono); font-size:22px; color:var(--text); line-height:1.4; position:relative; }
+    .rc-sub { font-size:13px; color:var(--text3); margin-top:8px; position:relative; }
+    .rc-answer-main { font-family:var(--font-mono); font-size:20px; color:var(--accent); line-height:1.4; margin-bottom:8px; position:relative; }
+    .rc-answer-example { font-size:12px; color:var(--text2); font-style:italic; line-height:1.6; position:relative; }
+    .flip-btn { width:100%; background:var(--surface); border:1px solid var(--border2); color:var(--text2); border-radius:var(--r); padding:11px; font-size:13px; cursor:pointer; font-family:var(--font-body); box-shadow:var(--shadow); }
+    .answer-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .ans-btn { padding:11px 6px; border-radius:var(--r); border:1px solid; font-size:12px; cursor:pointer; font-family:var(--font-body); line-height:1.4; }
+    .ans-hard { background:#fee2e2; border-color:#fca5a5; color:var(--red); }
+    .ans-ok { background:#fef3c7; border-color:#fcd34d; color:var(--yellow); }
+    .ans-easy { background:#d1fae5; border-color:#6ee7b7; color:var(--green); }
+    .progress-bar-wrap { background:var(--border); border-radius:4px; height:3px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:var(--accent); border-radius:4px; transition:width 0.3s; }
+    .done-box { text-align:center; padding:48px 20px; }
+    .done-emoji { font-size:40px; margin-bottom:14px; }
+    .done-title { font-size:20px; color:var(--text); margin-bottom:6px; }
+    .done-sub { font-size:13px; color:var(--text2); line-height:1.7; }
 
-    .logout-btn { background: none; border: 1px solid var(--border2); color: var(--text3); border-radius: 8px; padding: 5px 10px; font-size: 11px; cursor: pointer; font-family: var(--font-body); }
-    .sync-indicator { font-size: 10px; color: var(--text3); font-family: var(--font-mono); }
-    .sync-indicator.syncing { color: var(--yellow); }
-    .sync-indicator.synced { color: var(--green); }
+    /* BLANKS */
+    .blank { display:inline-block; border-bottom:2px solid var(--accent); min-width:60px; color:transparent; background:var(--accent-light); border-radius:3px; padding:0 4px; }
+    .blank.revealed { color:var(--accent); background:var(--accent-light); font-weight:700; }
+
+    /* DECK */
+    .deck-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px; box-shadow:var(--shadow); cursor:pointer; transition:border-color 0.15s; margin-bottom:10px; }
+    .deck-card:hover { border-color:var(--border2); }
+    .deck-name { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; }
+    .deck-meta { display:flex; gap:10px; }
+    .deck-meta span { font-size:11px; color:var(--text3); font-family:var(--font-mono); }
+    .deck-meta .due { color:var(--accent); }
+    .set-card { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r); padding:12px 14px; cursor:pointer; transition:all 0.15s; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+    .set-card:hover { border-color:var(--border2); }
+    .set-name { font-size:13px; font-weight:700; color:var(--text); }
+    .set-meta { font-size:11px; color:var(--text3); font-family:var(--font-mono); margin-top:3px; }
+    .breadcrumb { display:flex; align-items:center; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+    .breadcrumb span { font-size:12px; color:var(--text3); }
+    .breadcrumb button { background:none; border:none; color:var(--accent); font-size:12px; cursor:pointer; font-family:var(--font-body); padding:0; }
+    .action-btn { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:7px 14px; font-size:12px; cursor:pointer; font-family:var(--font-body); font-weight:700; }
+    .ghost-btn { background:none; border:1px solid var(--border2); color:var(--text2); border-radius:8px; padding:7px 12px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
+    .ghost-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .mode-select-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+    .mode-btn { padding:12px; border-radius:var(--r); border:1px solid var(--border2); background:var(--surface); font-size:13px; cursor:pointer; font-family:var(--font-body); text-align:center; transition:all 0.15s; }
+    .mode-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+
+    /* MISC */
+    .empty-state { text-align:center; padding:32px 16px; color:var(--text3); font-size:13px; line-height:1.7; }
+    .delete-btn { background:none; border:none; color:var(--text3); cursor:pointer; font-size:13px; padding:4px 6px; flex-shrink:0; }
+    .delete-btn:hover { color:var(--red); }
+    .sync-indicator { font-size:10px; color:var(--text3); font-family:var(--font-mono); }
+    .sync-indicator.syncing { color:var(--yellow); }
+    .sync-indicator.synced { color:var(--green); }
+    .logout-btn { background:none; border:1px solid var(--border2); color:var(--text3); border-radius:8px; padding:5px 10px; font-size:11px; cursor:pointer; }
   </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
+<!-- AUTH -->
 <div id="auth-screen" style="display:none;">
   <div class="auth-logo">MY·ENG</div>
   <div class="auth-desc">나만의 영어 공부 앱<br>이메일로 로그인하면 모든 기기에서 동기화돼</div>
   <div class="auth-card">
-    <div class="auth-title" id="auth-mode-label">이메일로 시작하기</div>
+    <div style="font-size:13px;color:var(--text2);">이메일로 시작하기</div>
     <input class="auth-input" type="email" id="auth-email" placeholder="이메일 주소" />
     <input class="auth-input" type="password" id="auth-password" placeholder="비밀번호 (6자 이상)" />
     <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">로그인 / 회원가입</button>
     <div class="auth-msg" id="auth-msg"></div>
-    <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6;">
-      처음이면 자동으로 계정이 만들어져<br>비밀번호를 잊었다면 이메일로 재설정 링크를 받을 수 있어
-    </div>
+    <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6;">처음이면 자동으로 계정이 만들어져</div>
   </div>
 </div>
 
@@ -197,7 +217,7 @@
     <button class="nav-btn" onclick="showPage('add')">추가</button>
     <button class="nav-btn" onclick="showPage('review')">복습</button>
     <button class="nav-btn" onclick="showPage('words')">단어장</button>
-    <button class="nav-btn" onclick="showPage('sets')">세트</button>
+    <button class="nav-btn" onclick="showPage('decks')">덱</button>
   </div>
 
   <!-- HOME -->
@@ -243,6 +263,7 @@
 
   <!-- ADD -->
   <div class="page" id="page-add">
+    <!-- 표현 추가 -->
     <div class="add-section">
       <div class="section-header">
         <span class="type-pill type-expr">표현</span>
@@ -260,6 +281,18 @@
         <div class="input-label">예시 문장 *</div>
         <input type="text" id="add-expr-example" placeholder="예: Let's get the ball rolling on this project." />
       </div>
+      <div class="input-group">
+        <div class="input-label">덱 선택 (선택사항)</div>
+        <select id="add-expr-deck" onchange="updateSetSelect('expr')">
+          <option value="">-- 덱 없이 추가 --</option>
+        </select>
+      </div>
+      <div class="input-group" id="add-expr-set-group" style="display:none;">
+        <div class="input-label">세트 선택</div>
+        <select id="add-expr-set">
+          <option value="">-- 세트 없이 추가 --</option>
+        </select>
+      </div>
       <div class="tag-row" style="margin-bottom:12px;">
         <span class="tag active" onclick="toggleTag(this,'expr')" data-tag="업무">업무</span>
         <span class="tag" onclick="toggleTag(this,'expr')" data-tag="일상">일상</span>
@@ -269,6 +302,8 @@
       </div>
       <button class="add-submit-btn" onclick="addExpression()">+ 표현 추가하기</button>
     </div>
+
+    <!-- 문장 추가 -->
     <div class="add-section">
       <div class="section-header">
         <span class="type-pill type-sent">문장</span>
@@ -281,6 +316,18 @@
       <div class="input-group">
         <div class="input-label">한국어 의미 *</div>
         <input type="text" id="add-sent-ko" placeholder="예: 새로운 소식이 있으면 계속 알려줄게" />
+      </div>
+      <div class="input-group">
+        <div class="input-label">덱 선택 (선택사항)</div>
+        <select id="add-sent-deck" onchange="updateSetSelect('sent')">
+          <option value="">-- 덱 없이 추가 --</option>
+        </select>
+      </div>
+      <div class="input-group" id="add-sent-set-group" style="display:none;">
+        <div class="input-label">세트 선택</div>
+        <select id="add-sent-set">
+          <option value="">-- 세트 없이 추가 --</option>
+        </select>
       </div>
       <div class="tag-row" style="margin-bottom:12px;">
         <span class="tag active" onclick="toggleTag(this,'sent')" data-tag="업무">업무</span>
@@ -297,14 +344,12 @@
         <span style="font-size:16px;">📂</span>
         <span style="font-size:13px;color:var(--text2);">CSV 파일로 대량 추가</span>
       </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--text3);line-height:1.8;font-family:var(--font-mono);">
-        형식: type, en, ko, example, tag<br>
-        expr, get the ball rolling, 일을 시작하다, Let's get started., 업무<br>
-        sent, I'll keep you posted., 계속 알려줄게, , 업무
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--text3);line-height:1.9;font-family:var(--font-mono);">
+        deck, set, type, en, ko, example, tag<br>
+        비즈니스, 이메일, expr, keep you posted, 계속 알려주다, I'll keep you posted., 업무<br>
+        비즈니스, 회의, sent, Let's wrap up., 마무리하자, , 업무
       </div>
-      <button onclick="downloadCsvTemplate()" style="width:100%;background:none;border:1px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:10px;font-size:13px;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;transition:all 0.15s;"
-        onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-        onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+      <button onclick="downloadCsvTemplate()" style="width:100%;background:none;border:1px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:10px;font-size:13px;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;">
         📥 양식 파일 다운로드 (.csv)
       </button>
       <div id="csv-drop-zone" onclick="document.getElementById('csv-file-input').click()"
@@ -313,7 +358,7 @@
         ondragleave="this.style.borderColor='var(--border2)';this.style.background='none'"
         ondrop="handleCsvDrop(event)">
         <div style="font-size:24px;margin-bottom:8px;">📄</div>
-        <div style="font-size:13px;color:var(--text2);">CSV 파일을 여기에 드래그하거나 클릭해서 선택</div>
+        <div style="font-size:13px;color:var(--text2);">CSV 파일을 드래그하거나 클릭해서 선택</div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px;">.csv 파일만 지원</div>
       </div>
       <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleCsvFile(this)" />
@@ -338,255 +383,221 @@
     </div>
   </div>
 
-  <!-- SETS -->
-  <div class="page" id="page-sets">
-    <div id="sets-main"><!-- 동적 렌더링 --></div>
+  <!-- DECKS -->
+  <div class="page" id="page-decks">
+    <div id="decks-main"></div>
   </div>
-
 </div>
 
 <script>
-// ── Supabase 설정 ──────────────────────────────────
 const SUPABASE_URL = 'https://cubrnpnkgehyjhgxvoof.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_3_jMhWzY3PEWsLqTt4D9kQ_gULBI9QR';
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── 상태 ──────────────────────────────────────────
 const API_KEY_SK = 'my_eng_apikey';
 const API_PROVIDER_SK = 'my_eng_provider';
-let items = [];
-let streak = 0;
-let lastStudyDate = null;
-let currentUser = null;
-let apiKey = '';
-let apiProvider = 'openai'; // 'openai' or 'anthropic'
+let items = [], decks = [], sets = [], itemSets = [];
+let streak = 0, lastStudyDate = null, currentUser = null;
+let apiKey = '', apiProvider = 'openai';
+let selectedProvider = 'openai';
 
-// ── 유틸 ──────────────────────────────────────────
+// ── UTILS ─────────────────────────────────────────
 function today() { return new Date().toISOString().split('T')[0]; }
 function srsNext(lvl) {
-  const days = [0,1,3,7,14,30,90];
-  const dt = new Date(); dt.setDate(dt.getDate()+days[Math.min(lvl,days.length-1)]);
+  const days=[0,1,3,7,14,30,90];
+  const dt=new Date(); dt.setDate(dt.getDate()+days[Math.min(lvl,days.length-1)]);
   return dt.toISOString().split('T')[0];
 }
-function dueItems() { const t = today(); return items.filter(w => !w.next_review || w.next_review <= t); }
+function dueItems() { const t=today(); return items.filter(w=>!w.next_review||w.next_review<=t); }
 function setSyncStatus(s) {
-  const el = document.getElementById('sync-indicator');
-  if (!el) return;
-  if (s==='syncing') { el.textContent='동기화 중...'; el.className='sync-indicator syncing'; }
-  else if (s==='synced') { el.textContent='✓ 동기화됨'; el.className='sync-indicator synced'; setTimeout(()=>{ el.textContent=''; }, 2000); }
-  else { el.textContent=''; el.className='sync-indicator'; }
+  const el=document.getElementById('sync-indicator'); if(!el) return;
+  if(s==='syncing'){el.textContent='동기화 중...';el.className='sync-indicator syncing';}
+  else if(s==='synced'){el.textContent='✓ 동기화됨';el.className='sync-indicator synced';setTimeout(()=>{el.textContent='';},2000);}
+  else{el.textContent='';el.className='sync-indicator';}
 }
+function esc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');}
 
-// ── 인증 ──────────────────────────────────────────
+// ── AUTH ──────────────────────────────────────────
 async function initAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    showApp();
-  } else {
-    document.getElementById('auth-screen').style.display = 'flex';
-  }
-  sb.auth.onAuthStateChange((event, session) => {
-    if (session) { currentUser = session.user; showApp(); }
-    else { currentUser = null; showAuthScreen(); }
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){currentUser=session.user;showApp();}
+  else{document.getElementById('auth-screen').style.display='flex';}
+  sb.auth.onAuthStateChange((e,s)=>{
+    if(s){currentUser=s.user;showApp();}else{currentUser=null;showAuthScreen();}
   });
 }
-
 async function handleAuth() {
-  const email = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value.trim();
-  const msg = document.getElementById('auth-msg');
-  const btn = document.getElementById('auth-submit-btn');
-  if (!email || !password) { msg.textContent = '이메일과 비밀번호를 입력해줘'; msg.className='auth-msg error'; return; }
-  btn.disabled = true;
-  msg.textContent = '처리 중...'; msg.className='auth-msg';
-
-  // 로그인 먼저 시도
-  let { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (error && error.message.includes('Invalid login credentials')) {
-    // 계정 없으면 회원가입
-    const res = await sb.auth.signUp({ email, password });
-    if (res.error) { msg.textContent = res.error.message; msg.className='auth-msg error'; btn.disabled=false; return; }
-    msg.textContent = '계정이 만들어졌어! 이메일 확인 후 로그인해줘'; msg.className='auth-msg success';
-    btn.disabled = false; return;
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-password').value.trim();
+  const msg=document.getElementById('auth-msg');
+  const btn=document.getElementById('auth-submit-btn');
+  if(!email||!password){msg.textContent='이메일과 비밀번호를 입력해줘';msg.className='auth-msg error';return;}
+  btn.disabled=true; msg.textContent='처리 중...'; msg.className='auth-msg';
+  let {error}=await sb.auth.signInWithPassword({email,password});
+  if(error&&error.message.includes('Invalid login credentials')){
+    const res=await sb.auth.signUp({email,password});
+    if(res.error){msg.textContent=res.error.message;msg.className='auth-msg error';btn.disabled=false;return;}
+    msg.textContent='계정이 만들어졌어! 로그인해줘';msg.className='auth-msg success';btn.disabled=false;return;
   }
-  if (error) { msg.textContent = error.message; msg.className='auth-msg error'; btn.disabled=false; return; }
-  // 성공 시 onAuthStateChange가 처리
+  if(error){msg.textContent=error.message;msg.className='auth-msg error';btn.disabled=false;}
+}
+async function handleLogout(){await sb.auth.signOut();items=[];decks=[];sets=[];itemSets=[];streak=0;lastStudyDate=null;}
+function showApp(){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  apiKey=localStorage.getItem(API_KEY_SK)||'';
+  apiProvider=localStorage.getItem(API_PROVIDER_SK)||'openai';
+  loadAll();
+}
+function showAuthScreen(){
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
 }
 
-async function handleLogout() {
-  await sb.auth.signOut();
-  items = []; streak = 0; lastStudyDate = null;
-}
-
-function showApp() {
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  apiKey = localStorage.getItem(API_KEY_SK) || '';
-  apiProvider = localStorage.getItem(API_PROVIDER_SK) || 'openai';
-  loadItems();
-}
-
-function showAuthScreen() {
-  document.getElementById('auth-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-}
-
-// ── DB 연동 ───────────────────────────────────────
-async function loadItems() {
-  if (!currentUser) return;
+// ── DB ────────────────────────────────────────────
+async function loadAll() {
+  if(!currentUser) return;
   setSyncStatus('syncing');
-  const { data, error } = await sb.from('items').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
-  if (!error && data) {
-    items = data;
-    // streak 계산 (로컬)
-    const streakData = JSON.parse(localStorage.getItem('my_eng_streak_'+currentUser.id) || '{"streak":0,"lastStudyDate":null}');
-    streak = streakData.streak;
-    lastStudyDate = streakData.lastStudyDate;
-  }
-  setSyncStatus('synced');
-  await loadSets();
-  updateHome();
-  renderApiSection();
-}
-
-function saveStreakLocal() {
-  if (!currentUser) return;
-  localStorage.setItem('my_eng_streak_'+currentUser.id, JSON.stringify({ streak, lastStudyDate }));
-}
-
-// ── 세트 상태 ──────────────────────────────────────
-let sets = [];       // [{id, name, ...}]
-let itemSets = [];   // [{id, set_id, item_id}]
-
-async function loadSets() {
-  if (!currentUser) return;
-  const [s1, s2] = await Promise.all([
-    sb.from('sets').select('*').eq('user_id', currentUser.id).order('created_at'),
-    sb.from('item_sets').select('*').eq('user_id', currentUser.id)
+  const [r1,r2,r3,r4]=await Promise.all([
+    sb.from('items').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+    sb.from('decks').select('*').eq('user_id',currentUser.id).order('created_at'),
+    sb.from('sets').select('*').eq('user_id',currentUser.id).order('created_at'),
+    sb.from('item_sets').select('*').eq('user_id',currentUser.id)
   ]);
-  if (!s1.error) sets = s1.data||[];
-  if (!s2.error) itemSets = s2.data||[];
+  if(!r1.error) items=r1.data||[];
+  if(!r2.error) decks=r2.data||[];
+  if(!r3.error) sets=r3.data||[];
+  if(!r4.error) itemSets=r4.data||[];
+  const sd=JSON.parse(localStorage.getItem('my_eng_streak_'+(currentUser?.id||''))||'{"streak":0,"lastStudyDate":null}');
+  streak=sd.streak; lastStudyDate=sd.lastStudyDate;
+  setSyncStatus('synced');
+  updateHome(); renderApiSection(); populateAddSelects();
 }
-async function createSet(name) {
-  const {data,error} = await sb.from('sets').insert({user_id:currentUser.id, name}).select().single();
-  if (!error && data) { sets.push(data); return data; }
-  return null;
+function saveStreakLocal(){
+  localStorage.setItem('my_eng_streak_'+currentUser.id,JSON.stringify({streak,lastStudyDate}));
 }
-async function deleteSet(id) {
+async function insertItem(data){
+  if(!currentUser) return null;
+  setSyncStatus('syncing');
+  const {data:row,error}=await sb.from('items').insert({
+    user_id:currentUser.id,type:data.type,en:data.en,ko:data.ko,
+    example:data.example||'',tag:data.tag||'기타',level:0,next_review:today(),added_at:today()
+  }).select().single();
+  if(!error&&row){items.unshift(row);setSyncStatus('synced');return row;}
+  setSyncStatus(''); return null;
+}
+async function updateItem(id,updates){
+  if(!currentUser) return;
+  setSyncStatus('syncing');
+  await sb.from('items').update(updates).eq('id',id).eq('user_id',currentUser.id);
+  const idx=items.findIndex(i=>i.id===id);
+  if(idx>=0) items[idx]={...items[idx],...updates};
+  setSyncStatus('synced');
+}
+async function deleteItemDB(id){
+  await sb.from('items').delete().eq('id',id).eq('user_id',currentUser.id);
+  items=items.filter(i=>i.id!==id);
+}
+// Deck CRUD
+async function createDeck(name){
+  const {data,error}=await sb.from('decks').insert({user_id:currentUser.id,name}).select().single();
+  if(!error&&data){decks.push(data);return data;} return null;
+}
+async function deleteDeck(id){
+  await sb.from('decks').delete().eq('id',id).eq('user_id',currentUser.id);
+  decks=decks.filter(d=>d.id!==id);
+  sets=sets.filter(s=>s.deck_id!==id);
+}
+// Set CRUD
+async function createSet(deckId,name){
+  const {data,error}=await sb.from('sets').insert({user_id:currentUser.id,deck_id:deckId,name}).select().single();
+  if(!error&&data){sets.push(data);return data;} return null;
+}
+async function deleteSet(id){
   await sb.from('sets').delete().eq('id',id).eq('user_id',currentUser.id);
-  sets = sets.filter(s=>s.id!==id);
-  itemSets = itemSets.filter(s=>s.set_id!==id);
+  sets=sets.filter(s=>s.id!==id);
+  itemSets=itemSets.filter(s=>s.set_id!==id);
 }
-async function addItemToSet(setId, itemId) {
-  if (itemSets.find(s=>s.set_id===setId&&s.item_id===itemId)) return;
-  const {data,error} = await sb.from('item_sets').insert({user_id:currentUser.id, set_id:setId, item_id:itemId}).select().single();
-  if (!error && data) itemSets.push(data);
+// ItemSet
+async function addItemToSet(setId,itemId){
+  if(itemSets.find(s=>s.set_id===setId&&s.item_id===itemId)) return;
+  const {data,error}=await sb.from('item_sets').insert({user_id:currentUser.id,set_id:setId,item_id:itemId}).select().single();
+  if(!error&&data) itemSets.push(data);
 }
-async function removeItemFromSet(setId, itemId) {
+async function removeItemFromSet(setId,itemId){
   await sb.from('item_sets').delete().eq('set_id',setId).eq('item_id',itemId).eq('user_id',currentUser.id);
-  itemSets = itemSets.filter(s=>!(s.set_id===setId&&s.item_id===itemId));
+  itemSets=itemSets.filter(s=>!(s.set_id===setId&&s.item_id===itemId));
 }
-function getSetItems(setId) {
-  const ids = itemSets.filter(s=>s.set_id===setId).map(s=>s.item_id);
+function getSetItems(setId){
+  const ids=itemSets.filter(s=>s.set_id===setId).map(s=>s.item_id);
   return items.filter(i=>ids.includes(i.id));
 }
-
-async function insertItem(data) {
-  if (!currentUser) return null;
-  setSyncStatus('syncing');
-  const { data: row, error } = await sb.from('items').insert({
-    user_id: currentUser.id,
-    type: data.type, en: data.en, ko: data.ko,
-    example: data.example||'', tag: data.tag||'기타',
-    level: 0, next_review: today(), added_at: today()
-  }).select().single();
-  if (!error && row) { items.unshift(row); setSyncStatus('synced'); return row; }
-  setSyncStatus('');
-  return null;
+function getDeckItems(deckId){
+  const deckSetIds=sets.filter(s=>s.deck_id===deckId).map(s=>s.id);
+  const ids=new Set(itemSets.filter(s=>deckSetIds.includes(s.set_id)).map(s=>s.item_id));
+  return items.filter(i=>ids.has(i.id));
+}
+function updateStreak(){
+  const t=today(); if(lastStudyDate===t) return;
+  const y=new Date(); y.setDate(y.getDate()-1);
+  const ys=y.toISOString().split('T')[0];
+  streak=lastStudyDate===ys?streak+1:1; lastStudyDate=t; saveStreakLocal();
 }
 
-async function updateItem(id, updates) {
-  if (!currentUser) return;
-  setSyncStatus('syncing');
-  await sb.from('items').update(updates).eq('id', id).eq('user_id', currentUser.id);
-  const idx = items.findIndex(i=>i.id===id);
-  if (idx>=0) items[idx] = {...items[idx], ...updates};
-  setSyncStatus('synced');
-}
-
-async function deleteItemDB(id) {
-  if (!currentUser) return;
-  setSyncStatus('syncing');
-  await sb.from('items').delete().eq('id', id).eq('user_id', currentUser.id);
-  items = items.filter(i=>i.id!==id);
-  setSyncStatus('synced');
-}
-
-function updateStreak() {
-  const t = today();
-  if (lastStudyDate === t) return;
-  const y = new Date(); y.setDate(y.getDate()-1);
-  const ys = y.toISOString().split('T')[0];
-  streak = lastStudyDate === ys ? streak+1 : 1;
-  lastStudyDate = t;
-  saveStreakLocal();
-}
-
-// ── 네비게이션 ────────────────────────────────────
-const navMap = {home:0,translate:1,add:2,review:3,words:4,sets:5};
-function showPage(name) {
+// ── NAV ───────────────────────────────────────────
+const navMap={home:0,translate:1,add:2,review:3,words:4,decks:5};
+function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  if (navMap[name]!==undefined) document.querySelectorAll('.nav-btn')[navMap[name]].classList.add('active');
-  if (name==='translate') renderApiSection();
-  if (name==='review') renderReview();
-  if (name==='words') renderWords(wordTab);
-  if (name==='sets') renderSetsPage();
+  if(navMap[name]!==undefined) document.querySelectorAll('.nav-btn')[navMap[name]].classList.add('active');
+  if(name==='translate') renderApiSection();
+  if(name==='review') renderReview();
+  if(name==='words') renderWords(wordTab);
+  if(name==='decks') renderDecksPage();
+  if(name==='add') populateAddSelects();
   updateHome();
 }
 
-function updateHome() {
-  document.getElementById('stat-expr').textContent = items.filter(i=>i.type==='expr').length;
-  document.getElementById('stat-sent').textContent = items.filter(i=>i.type==='sent').length;
-  const due = dueItems().length;
-  document.getElementById('stat-due').textContent = due;
-  document.getElementById('due-count').textContent = due;
-  document.getElementById('streak-display').textContent = '🔥 '+streak+'일 연속';
-  const el = document.getElementById('recent-list');
-  if (!items.length) { el.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요<br>번역하거나 직접 추가해보세요!</div>'; return; }
-  el.innerHTML = items.slice(0,5).map(renderItemRow).join('');
+// ── HOME ──────────────────────────────────────────
+function updateHome(){
+  document.getElementById('stat-expr').textContent=items.filter(i=>i.type==='expr').length;
+  document.getElementById('stat-sent').textContent=items.filter(i=>i.type==='sent').length;
+  const due=dueItems().length;
+  document.getElementById('stat-due').textContent=due;
+  document.getElementById('due-count').textContent=due;
+  document.getElementById('streak-display').textContent='🔥 '+streak+'일 연속';
+  const el=document.getElementById('recent-list');
+  if(!items.length){el.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요<br>번역하거나 직접 추가해보세요!</div>';return;}
+  el.innerHTML=items.slice(0,5).map(renderItemRow).join('');
 }
-
-function renderItemRow(w) {
-  const lvl = w.level||0;
-  const cls = lvl===0?'level-new':lvl<4?'level-learning':'level-known';
-  const lbl = lvl===0?'NEW':lvl<4?'Lv.'+lvl:'✓';
-  const typePill = w.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>';
+function renderItemRow(w){
+  const lvl=w.level||0;
+  const cls=lvl===0?'level-new':lvl<4?'level-learning':'level-known';
+  const lbl=lvl===0?'NEW':lvl<4?'Lv.'+lvl:'✓';
+  const typePill=w.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>';
   return `<div class="item-row">
     <div style="flex:1;min-width:0;">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">${typePill}<span class="level-pill ${cls}">${lbl}</span></div>
-      <div class="item-en">${w.en}</div>
-      <div class="item-ko">${w.ko}</div>
+      <div class="item-en">${w.en}</div><div class="item-ko">${w.ko}</div>
       ${w.example?`<div class="item-example">"${w.example}"</div>`:''}
     </div>
     <button class="delete-btn" onclick="deleteItem(${w.id})">✕</button>
   </div>`;
 }
 
-// ── 번역 ──────────────────────────────────────────
-function renderApiSection() {
-  const sec = document.getElementById('api-key-section');
-  const form = document.getElementById('translate-form');
-  if (!sec || !form) return;
-  if (apiKey) {
-    const label = apiProvider === 'openai' ? '✓ OpenAI GPT 연결됨' : '✓ Anthropic Claude 연결됨';
-    sec.innerHTML = `<div class="api-connected"><span class="api-connected-label">${label}</span><button class="api-reset-btn" onclick="resetApiKey()">키 변경</button></div>`;
-    form.style.display = 'flex';
+// ── TRANSLATE ─────────────────────────────────────
+function renderApiSection(){
+  const sec=document.getElementById('api-key-section');
+  const form=document.getElementById('translate-form');
+  if(!sec||!form) return;
+  if(apiKey){
+    const label=apiProvider==='openai'?'✓ OpenAI GPT 연결됨':'✓ Anthropic Claude 연결됨';
+    sec.innerHTML=`<div class="api-connected"><span class="api-connected-label">${label}</span><button class="api-reset-btn" onclick="resetApiKey()">키 변경</button></div>`;
+    form.style.display='flex';
   } else {
-    sec.innerHTML = `<div class="api-banner">
+    sec.innerHTML=`<div class="api-banner">
       <div class="api-banner-title">🔑 번역 API 키 설정</div>
       <div class="api-banner-desc">둘 중 하나를 선택해서 입력해줘. 키는 이 기기에만 저장돼.</div>
       <div style="display:flex;gap:8px;margin-bottom:10px;">
@@ -601,77 +612,55 @@ function renderApiSection() {
         <button class="api-save-btn" onclick="submitApiKey()">저장</button>
       </div>
     </div>`;
-    form.style.display = 'none';
+    form.style.display='none';
   }
 }
-
-let selectedProvider = 'openai';
-function selectProvider(provider, el) {
-  selectedProvider = provider;
-  document.getElementById('btn-openai').style.cssText = 'flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);';
-  document.getElementById('btn-anthropic').style.cssText = 'flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);';
-  el.style.cssText = 'flex:1;padding:8px;border-radius:8px;border:2px solid var(--accent);background:var(--accent-light);color:var(--accent);font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:700;';
-  const desc = document.getElementById('api-link-desc');
-  if (provider === 'openai') {
-    desc.innerHTML = '<a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);">platform.openai.com</a>에서 발급 → API keys';
-    document.getElementById('api-key-input').placeholder = 'sk-...';
-  } else {
-    desc.innerHTML = '<a href="https://console.anthropic.com" target="_blank" style="color:var(--blue);">console.anthropic.com</a>에서 발급 → API keys';
-    document.getElementById('api-key-input').placeholder = 'sk-ant-...';
-  }
+function selectProvider(provider,el){
+  selectedProvider=provider;
+  document.getElementById('btn-openai').style.cssText='flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);';
+  document.getElementById('btn-anthropic').style.cssText='flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);';
+  el.style.cssText='flex:1;padding:8px;border-radius:8px;border:2px solid var(--accent);background:var(--accent-light);color:var(--accent);font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:700;';
+  const desc=document.getElementById('api-link-desc');
+  if(provider==='openai'){desc.innerHTML='<a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);">platform.openai.com</a>에서 발급 → API keys';document.getElementById('api-key-input').placeholder='sk-...';}
+  else{desc.innerHTML='<a href="https://console.anthropic.com" target="_blank" style="color:var(--blue);">console.anthropic.com</a>에서 발급 → API keys';document.getElementById('api-key-input').placeholder='sk-ant-...';}
 }
-
-function submitApiKey() {
-  const val = document.getElementById('api-key-input').value.trim();
-  if (!val.startsWith('sk-')) { alert('올바른 API 키 형식이 아니야. sk-로 시작해야 해.'); return; }
-  apiKey = val;
-  apiProvider = selectedProvider;
-  localStorage.setItem(API_KEY_SK, val);
-  localStorage.setItem(API_PROVIDER_SK, selectedProvider);
+function submitApiKey(){
+  const val=document.getElementById('api-key-input').value.trim();
+  if(!val.startsWith('sk-')){alert('올바른 API 키 형식이 아니야.');return;}
+  apiKey=val;apiProvider=selectedProvider;
+  localStorage.setItem(API_KEY_SK,val);localStorage.setItem(API_PROVIDER_SK,selectedProvider);
   renderApiSection();
 }
-function resetApiKey() {
-  if (!confirm('API 키를 삭제할까?')) return;
-  apiKey = ''; apiProvider = 'openai';
-  localStorage.removeItem(API_KEY_SK);
-  localStorage.removeItem(API_PROVIDER_SK);
+function resetApiKey(){
+  if(!confirm('API 키를 삭제할까?')) return;
+  apiKey='';apiProvider='openai';
+  localStorage.removeItem(API_KEY_SK);localStorage.removeItem(API_PROVIDER_SK);
   renderApiSection();
 }
-
-async function doTranslate() {
-  const text = document.getElementById('ko-input').value.trim();
-  if (!text || !apiKey) return;
-  const btn = document.getElementById('trans-btn');
-  btn.disabled = true;
-  document.getElementById('trans-result').style.display = 'none';
-  document.getElementById('trans-loading').style.display = 'block';
-  const prompt = `한국어 문장을 자연스러운 영어로 번역해줘. JSON만 반환. 다른 텍스트 없이.
+async function doTranslate(){
+  const text=document.getElementById('ko-input').value.trim();
+  if(!text||!apiKey) return;
+  const btn=document.getElementById('trans-btn');
+  btn.disabled=true;
+  document.getElementById('trans-result').style.display='none';
+  document.getElementById('trans-loading').style.display='block';
+  const prompt=`한국어 문장을 자연스러운 영어로 번역해줘. JSON만 반환. 다른 텍스트 없이.
 {"translation":"영어 번역 전체 문장","pattern":"핵심 패턴/표현 (한국어, 짧게)","key_phrase":"가장 외워두면 좋은 영어 표현","key_phrase_ko":"그 표현의 한국어 의미","key_example":"key_phrase를 쓴 다른 예시 문장 (짧게)"}
 한국어: ${text}`;
   try {
     let r;
-    if (apiProvider === 'openai') {
-      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
-        body: JSON.stringify({ model:'gpt-4o-mini', max_tokens:1000, messages:[{role:'user',content:prompt}] })
-      });
-      if (!resp.ok) { const e=await resp.json(); throw new Error(e.error?.message||resp.status); }
-      const data = await resp.json();
-      r = JSON.parse(data.choices[0].message.content.replace(/```json|```/g,'').trim());
+    if(apiProvider==='openai'){
+      const resp=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+      if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.status);}
+      const data=await resp.json();r=JSON.parse(data.choices[0].message.content.replace(/```json|```/g,'').trim());
     } else {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:1000, messages:[{role:'user',content:prompt}] })
-      });
-      if (!resp.ok) { const e=await resp.json(); throw new Error(e.error?.message||resp.status); }
-      const data = await resp.json();
-      r = JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+      if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.status);}
+      const data=await resp.json();r=JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
     }
-    document.getElementById('trans-loading').style.display = 'none';
-    document.getElementById('trans-result').style.display = 'block';
-    document.getElementById('trans-result').innerHTML = `
+    document.getElementById('trans-loading').style.display='none';
+    document.getElementById('trans-result').style.display='block';
+    document.getElementById('trans-result').innerHTML=`
       <div class="result-box">
         <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:8px;">번역 결과</div>
         <div class="result-en-text">${r.translation}</div>
@@ -688,392 +677,505 @@ async function doTranslate() {
         <div style="font-size:11px;color:var(--text3);font-style:italic;margin-bottom:10px;">"${r.key_example}"</div>
         <div class="save-row"><div></div><button class="save-expr-btn" onclick="saveExprFromTrans('${esc(r.key_phrase)}','${esc(r.key_phrase_ko)}','${esc(r.key_example)}',this)">+ 표현 저장</button></div>
       </div>`;
-  } catch(e) {
-    document.getElementById('trans-loading').style.display = 'none';
-    document.getElementById('trans-result').style.display = 'block';
-    document.getElementById('trans-result').innerHTML = `<div class="result-box"><div class="result-en-text" style="color:var(--red);">오류: ${e.message}</div></div>`;
+  } catch(e){
+    document.getElementById('trans-loading').style.display='none';
+    document.getElementById('trans-result').style.display='block';
+    document.getElementById('trans-result').innerHTML=`<div class="result-box"><div class="result-en-text" style="color:var(--red);">오류: ${e.message}</div></div>`;
   }
-  btn.disabled = false;
+  btn.disabled=false;
 }
+async function saveExprFromTrans(en,ko,example,btn){await addItemData({type:'expr',en,ko,example,tag:'번역'});btn.textContent='✓ 저장됨';btn.classList.add('saved');}
+async function saveSentFromTrans(en,ko,btn){await addItemData({type:'sent',en,ko,example:'',tag:'번역'});btn.textContent='✓ 저장됨';btn.classList.add('saved');}
 
-function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
-async function saveExprFromTrans(en,ko,example,btn) { await addItem({type:'expr',en,ko,example,tag:'번역'}); btn.textContent='✓ 저장됨'; btn.classList.add('saved'); }
-async function saveSentFromTrans(en,ko,btn) { await addItem({type:'sent',en,ko,example:'',tag:'번역'}); btn.textContent='✓ 저장됨'; btn.classList.add('saved'); }
-
-// ── 추가 ──────────────────────────────────────────
-let selTag = {expr:'업무', sent:'업무'};
-function toggleTag(el, form) {
+// ── ADD ───────────────────────────────────────────
+let selTag={expr:'업무',sent:'업무'};
+function toggleTag(el,form){
   el.closest('.add-section').querySelectorAll('.tag').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active'); selTag[form]=el.dataset.tag;
+  el.classList.add('active');selTag[form]=el.dataset.tag;
 }
-async function addExpression() {
+function populateAddSelects(){
+  ['expr','sent'].forEach(form=>{
+    const deckSel=document.getElementById('add-'+form+'-deck');
+    if(!deckSel) return;
+    const cur=deckSel.value;
+    deckSel.innerHTML='<option value="">-- 덱 없이 추가 --</option>';
+    decks.forEach(d=>{ const o=document.createElement('option');o.value=d.id;o.textContent=d.name;deckSel.appendChild(o); });
+    if(cur) deckSel.value=cur;
+    updateSetSelect(form);
+  });
+}
+function updateSetSelect(form){
+  const deckId=document.getElementById('add-'+form+'-deck').value;
+  const setGroup=document.getElementById('add-'+form+'-set-group');
+  const setSel=document.getElementById('add-'+form+'-set');
+  if(!deckId){setGroup.style.display='none';return;}
+  setGroup.style.display='flex';
+  setSel.innerHTML='<option value="">-- 세트 없이 추가 --</option>';
+  sets.filter(s=>String(s.deck_id)===String(deckId)).forEach(s=>{
+    const o=document.createElement('option');o.value=s.id;o.textContent=s.name;setSel.appendChild(o);
+  });
+}
+async function addExpression(){
   const en=document.getElementById('add-expr-en').value.trim();
   const ko=document.getElementById('add-expr-ko').value.trim();
   const ex=document.getElementById('add-expr-example').value.trim();
-  if (!en||!ko||!ex) { alert('영어 표현, 한국어 의미, 예시 문장을 모두 입력해주세요'); return; }
-  await addItem({type:'expr',en,ko,example:ex,tag:selTag.expr});
+  if(!en||!ko||!ex){alert('영어 표현, 한국어 의미, 예시 문장을 모두 입력해주세요');return;}
+  const deckId=document.getElementById('add-expr-deck').value||null;
+  const setId=document.getElementById('add-expr-set').value||null;
+  await addItemData({type:'expr',en,ko,example:ex,tag:selTag.expr},setId?Number(setId):null);
   document.getElementById('add-expr-en').value='';
   document.getElementById('add-expr-ko').value='';
   document.getElementById('add-expr-example').value='';
   showPage('home');
 }
-async function addSentence() {
+async function addSentence(){
   const en=document.getElementById('add-sent-en').value.trim();
   const ko=document.getElementById('add-sent-ko').value.trim();
-  if (!en||!ko) { alert('영어 문장과 한국어 의미를 입력해주세요'); return; }
-  await addItem({type:'sent',en,ko,example:'',tag:selTag.sent});
+  if(!en||!ko){alert('영어 문장과 한국어 의미를 입력해주세요');return;}
+  const setId=document.getElementById('add-sent-set').value||null;
+  await addItemData({type:'sent',en,ko,example:'',tag:selTag.sent},setId?Number(setId):null);
   document.getElementById('add-sent-en').value='';
   document.getElementById('add-sent-ko').value='';
   showPage('home');
 }
-async function addItem(data) {
-  if (items.find(i=>i.en.toLowerCase()===data.en.toLowerCase())) return;
-  await insertItem(data);
-  updateHome();
+async function addItemData(data, setId=null){
+  if(items.find(i=>i.en.toLowerCase()===data.en.toLowerCase())) return null;
+  const row=await insertItem(data);
+  if(row&&setId) await addItemToSet(setId,row.id);
+  updateHome(); return row;
 }
-async function deleteItem(id) {
-  await deleteItemDB(id);
-  updateHome();
-  renderWords(wordTab);
+async function deleteItem(id){
+  await deleteItemDB(id); updateHome(); renderWords(wordTab);
 }
 
-// ── CSV 업로드 ─────────────────────────────────────
-function downloadCsvTemplate() {
-  const content = [
-    'type,en,ko,example,tag',
-    'expr,get the ball rolling,일을 시작하다,Let\'s get the ball rolling on this project.,업무',
-    'expr,keep in mind,명심하다,Keep in mind that the deadline is Friday.,업무',
-    'expr,reach out,연락하다,Feel free to reach out if you need help.,비즈니스',
-    'sent,I\'ll keep you posted on any updates.,새로운 소식이 있으면 계속 알려줄게,,업무',
-    'sent,Let me get back to you on that.,그 부분은 확인 후 다시 연락할게,,비즈니스',
+// ── CSV ───────────────────────────────────────────
+function downloadCsvTemplate(){
+  const content=[
+    'deck,set,type,en,ko,example,tag',
+    '비즈니스 영어,이메일 표현,expr,keep you posted,계속 알려주다,I\'ll keep you posted on any updates.,업무',
+    '비즈니스 영어,이메일 표현,sent,I\'ll get back to you on that.,확인 후 다시 연락할게,,업무',
+    '비즈니스 영어,회의 표현,expr,wrap up,마무리하다,Let\'s wrap up the meeting.,업무',
+    '일상 영어,구어 표현,expr,hang out,놀다/어울리다,Do you want to hang out this weekend?,일상',
   ].join('\n');
-  const blob = new Blob(['\uFEFF'+content], {type:'text/csv;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'my-eng-template.csv';
-  a.click(); URL.revokeObjectURL(url);
+  const blob=new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='my-eng-template.csv';a.click();URL.revokeObjectURL(url);
 }
-function handleCsvDrop(e) {
+function handleCsvDrop(e){
   e.preventDefault();
-  const zone = document.getElementById('csv-drop-zone');
-  zone.style.borderColor='var(--border2)'; zone.style.background='none';
-  const file = e.dataTransfer.files[0];
-  if (file && file.name.endsWith('.csv')) processCsvFile(file);
+  const zone=document.getElementById('csv-drop-zone');
+  zone.style.borderColor='var(--border2)';zone.style.background='none';
+  const file=e.dataTransfer.files[0];
+  if(file&&file.name.endsWith('.csv')) processCsvFile(file);
   else alert('.csv 파일만 업로드할 수 있어!');
 }
-function handleCsvFile(input) {
-  const file = input.files[0];
-  if (file) processCsvFile(file);
-}
-function processCsvFile(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result;
-    const rows = text.trim().split('\n').map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g,'')));
-    // 헤더 제거 (type, en, ko ... 로 시작하면)
-    const dataRows = rows[0][0].toLowerCase()==='type' ? rows.slice(1) : rows;
-    const valid = dataRows.filter(r => r.length >= 3 && r[0] && r[1] && r[2]);
-    const invalid = dataRows.length - valid.length;
-    if (!valid.length) { alert('유효한 데이터가 없어! 형식을 확인해줘'); return; }
-    // 미리보기
-    const preview = document.getElementById('csv-preview');
-    preview.style.display = 'block';
-    preview.innerHTML = `
+function handleCsvFile(input){if(input.files[0]) processCsvFile(input.files[0]);}
+function processCsvFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result;
+    const rows=text.trim().split('\n').map(r=>{
+      const result=[]; let cur=''; let inQ=false;
+      for(const ch of r){if(ch==='"'){inQ=!inQ;}else if(ch===','&&!inQ){result.push(cur.trim());cur='';}else{cur+=ch;}}
+      result.push(cur.trim()); return result.map(c=>c.replace(/^"|"$/g,''));
+    });
+    const dataRows=rows[0][0].toLowerCase()==='deck'?rows.slice(1):rows;
+    const valid=dataRows.filter(r=>r.length>=5&&r[2]&&r[3]&&r[4]);
+    if(!valid.length){alert('유효한 데이터가 없어! 형식을 확인해줘');return;}
+    const preview=document.getElementById('csv-preview');
+    preview.style.display='block';
+    preview.innerHTML=`
       <div style="background:var(--accent-light);border:1px solid rgba(45,106,45,0.2);border-radius:var(--r);padding:12px;margin-bottom:10px;">
         <div style="font-size:13px;color:var(--accent);font-weight:700;margin-bottom:4px;">📋 미리보기</div>
-        <div style="font-size:12px;color:var(--text2);">총 ${valid.length}개 항목 ${invalid>0?`(${invalid}개 형식 오류 제외)`:''}</div>
+        <div style="font-size:12px;color:var(--text2);">총 ${valid.length}개 항목</div>
       </div>
       <div style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;">
         ${valid.slice(0,5).map(r=>`
           <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;">
-            <span class="type-pill ${r[0]==='expr'?'type-expr':'type-sent'}" style="margin-right:6px;">${r[0]==='expr'?'표현':'문장'}</span>
-            <span style="font-family:var(--font-mono);color:var(--text);">${r[1]}</span>
-            <span style="color:var(--text3);"> — ${r[2]}</span>
+            <span class="type-pill ${r[2]==='expr'?'type-expr':'type-sent'}">${r[2]==='expr'?'표현':'문장'}</span>
+            <span style="font-family:var(--font-mono);color:var(--text);margin-left:6px;">${r[3]}</span>
+            <span style="color:var(--text3);"> — ${r[4]}</span>
+            ${r[0]?`<span style="font-size:10px;color:var(--text3);margin-left:4px;">[${r[0]}${r[1]?' > '+r[1]:''}]</span>`:''}
           </div>`).join('')}
         ${valid.length>5?`<div style="padding:8px 12px;font-size:11px;color:var(--text3);">... 외 ${valid.length-5}개</div>`:''}
       </div>
-      <button onclick="importCsvData(${JSON.stringify(valid).replace(/"/g,'&quot;')})" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);">
+      <button onclick="importCsvData(this)" data-rows='${JSON.stringify(valid).replace(/'/g,"&#39;")}' style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);">
         ${valid.length}개 전체 추가하기
       </button>`;
   };
-  reader.readAsText(file, 'UTF-8');
+  reader.readAsText(file,'UTF-8');
 }
-async function importCsvData(rows) {
-  const btn = event.target;
-  btn.disabled = true; btn.textContent = '추가 중...';
-  let added = 0, skipped = 0;
-  for (const r of rows) {
-    const type = r[0]==='expr'?'expr':'sent';
-    const en = r[1], ko = r[2], example = r[3]||'', tag = r[4]||'기타';
-    if (items.find(i=>i.en.toLowerCase()===en.toLowerCase())) { skipped++; continue; }
-    const row = await insertItem({type, en, ko, example, tag});
-    if (row) added++;
-    btn.textContent = `추가 중... ${added}/${rows.length}`;
+async function importCsvData(btn){
+  const rows=JSON.parse(btn.dataset.rows.replace(/&#39;/g,"'"));
+  btn.disabled=true;btn.textContent='추가 중...';
+  let added=0,skipped=0;
+  // 덱/세트 캐시
+  const deckCache={},setCache={};
+  for(const r of rows){
+    const deckName=r[0]?.trim(),setName=r[1]?.trim(),type=r[2]==='expr'?'expr':'sent';
+    const en=r[3],ko=r[4],example=r[5]||'',tag=r[6]||'기타';
+    if(items.find(i=>i.en.toLowerCase()===en.toLowerCase())){skipped++;continue;}
+    // 덱 처리
+    let deckId=null,setId=null;
+    if(deckName){
+      if(!deckCache[deckName]){
+        let d=decks.find(x=>x.name===deckName);
+        if(!d) d=await createDeck(deckName);
+        deckCache[deckName]=d?.id;
+      }
+      deckId=deckCache[deckName];
+    }
+    // 세트 처리
+    if(setName&&deckId){
+      const cacheKey=deckId+'|'+setName;
+      if(!setCache[cacheKey]){
+        let s=sets.find(x=>x.deck_id===deckId&&x.name===setName);
+        if(!s) s=await createSet(deckId,setName);
+        setCache[cacheKey]=s?.id;
+      }
+      setId=setCache[cacheKey];
+    }
+    const row=await insertItem({type,en,ko,example,tag});
+    if(row){if(setId) await addItemToSet(setId,row.id);added++;}
+    btn.textContent=`추가 중... ${added+skipped}/${rows.length}`;
   }
-  updateHome();
-  document.getElementById('csv-preview').innerHTML = `
+  updateHome();populateAddSelects();
+  document.getElementById('csv-preview').innerHTML=`
     <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:var(--r);padding:14px;text-align:center;">
       <div style="font-size:16px;margin-bottom:4px;">✅ 완료!</div>
-      <div style="font-size:13px;color:var(--green);">${added}개 추가됨 ${skipped>0?`/ ${skipped}개 중복 건너뜀`:''}</div>
+      <div style="font-size:13px;color:var(--green);">${added}개 추가 ${skipped>0?`/ ${skipped}개 중복 건너뜀`:''}</div>
     </div>`;
   document.getElementById('csv-file-input').value='';
 }
 
-// ── 복습 ──────────────────────────────────────────
-let rQueue=[], rCurrent=null, rDone=0;
-function renderReview() {
-  const t = today();
-  const pool = reviewMode==='all'
-    ? items.filter(w=>!w.next_review||w.next_review<=t)
-    : getSetItems(reviewMode).filter(w=>!w.next_review||w.next_review<=t);
-  rQueue=[...pool]; rDone=0;
-  // 세트 복습이면 헤더 표시
-  const area = document.getElementById('review-area');
-  if (reviewMode!=='all') {
-    const set = sets.find(s=>s.id===reviewMode);
-    area.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <button onclick="reviewMode='all';showPage('sets')" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;">← 세트로</button>
-      <div style="font-size:12px;color:var(--text2);">${set?.name||''} 복습 중</div>
-    </div>`;
-    area.innerHTML += '<div id="review-cards"></div>';
-    nextCard(true);
-  } else {
-    nextCard(false);
-  }
-}
-function nextCard(useSubContainer) {
-  const area = useSubContainer
-    ? document.getElementById('review-cards') || document.getElementById('review-area')
-    : document.getElementById('review-area');
-  if (!rQueue.length) {
-    if (rDone>0) updateStreak();
-    const html = rDone===0
-      ? `<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">복습 완료!</div><div class="done-sub">모든 카드를 다 봤어<br>내일 또 만나자</div></div>`
-      : `<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone}개 복습 완료!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak}일 연속 학습 중</div></div>`;
-    if (useSubContainer) area.innerHTML = html;
-    else area.innerHTML = html;
-    updateHome(); return;
-  }
-  rCurrent = rQueue.shift();
-  const total = rDone+rQueue.length+1;
-  const pct = Math.round((rDone/total)*100);
-  const cardHtml = `
-    <div style="margin-bottom:10px;">
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:5px;"><span>${rDone+1} / ${total}</span><span>${pct}%</span></div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
-    </div>
-    <div style="display:flex;gap:6px;margin-bottom:10px;">
-      ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
-      <span style="font-size:11px;color:var(--text3);align-self:center;">${rCurrent.tag}</span>
-    </div>
-    <div class="review-card">
-      <div class="rc-label">한국어 → 영어</div>
-      <div class="rc-main">${rCurrent.ko}</div>
-    </div>
-    <button class="flip-btn" style="margin-top:10px;" onclick="flipCard(${useSubContainer})">정답 보기</button>`;
-  area.innerHTML = cardHtml;
-}
+// ── REVIEW ────────────────────────────────────────
+let rQueue=[],rCurrent=null,rDone=0,reviewMode='all',reviewType='ko-en';
 
-function flipCard(useSubContainer) {
-  const area = useSubContainer
-    ? document.getElementById('review-cards') || document.getElementById('review-area')
-    : document.getElementById('review-area');
-  const total = rDone+rQueue.length+1;
-  const pct = Math.round((rDone/total)*100);
-  area.innerHTML = `
-    <div style="margin-bottom:10px;">
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:5px;"><span>${rDone+1} / ${total}</span><span>${pct}%</span></div>
-      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
-    </div>
-    <div style="display:flex;gap:6px;margin-bottom:10px;">
-      ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
-    </div>
-    <div class="review-card">
-      <div class="rc-label">정답</div>
-      <div class="rc-answer-main">${rCurrent.en}</div>
-      ${rCurrent.example?`<div class="rc-answer-example">"${rCurrent.example}"</div>`:''}
-    </div>
-    <div style="margin-top:10px;">
-      <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">얼마나 잘 기억했어?</div>
-      <div class="answer-row">
-        <button class="ans-btn ans-hard" onclick="rateCard(0,${useSubContainer})">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
-        <button class="ans-btn ans-ok" onclick="rateCard(1,${useSubContainer})">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
-        <button class="ans-btn ans-easy" onclick="rateCard(2,${useSubContainer})">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
+function renderReview(){
+  const t=today();
+  let pool;
+  if(reviewMode==='all') pool=items.filter(w=>!w.next_review||w.next_review<=t);
+  else if(typeof reviewMode==='string'&&reviewMode.startsWith('deck:')) pool=getDeckItems(Number(reviewMode.split(':')[1])).filter(w=>!w.next_review||w.next_review<=t);
+  else pool=getSetItems(Number(reviewMode)).filter(w=>!w.next_review||w.next_review<=t);
+  rQueue=[...pool];rDone=0;
+  const area=document.getElementById('review-area');
+  if(reviewMode!=='all'){
+    // 모드 선택 UI
+    area.innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <button onclick="reviewMode='all';renderDecksPage();showPage('decks')" class="ghost-btn">← 덱으로</button>
+        <div style="font-size:12px;color:var(--text2);flex:1;">${rQueue.length}개 카드 복습</div>
       </div>
-    </div>`;
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">복습 모드 선택</div>
+        <div class="mode-select-row">
+          <button class="mode-btn" onclick="reviewType='ko-en';startReviewCards()">🇰🇷→🇺🇸<br><span style="font-size:11px;color:var(--text3);">한국어→영어</span></button>
+          <button class="mode-btn" onclick="reviewType='blank';startReviewCards()">✏️ 빈칸<br><span style="font-size:11px;color:var(--text3);">빈칸 채우기</span></button>
+        </div>
+      </div>`;
+  } else {
+    startReviewCards();
+  }
 }
 
-async function rateCard(r, useSubContainer) {
-  const newLevel = r===0?Math.max(0,(rCurrent.level||0)-1):r===1?(rCurrent.level||0):Math.min(6,(rCurrent.level||0)+1);
-  const newReview = srsNext(newLevel);
-  await updateItem(rCurrent.id, { level: newLevel, next_review: newReview });
-  rDone++; nextCard(useSubContainer||false);
+function startReviewCards(){ nextCard(); }
+
+function nextCard(){
+  const area=document.getElementById('review-area');
+  if(!rQueue.length){
+    if(rDone>0) updateStreak();
+    area.innerHTML=rDone===0
+      ?`<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">오늘 복습 완료!</div><div class="done-sub">모든 카드를 다 봤어<br>내일 또 만나자</div></div>`
+      :`<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone}개 복습 완료!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak}일 연속 학습 중</div></div>`;
+    updateHome();return;
+  }
+  rCurrent=rQueue.shift();
+  const total=rDone+rQueue.length+1;
+  const pct=Math.round((rDone/total)*100);
+  const progressHtml=`<div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:5px;"><span>${rDone+1} / ${total}</span><span>${pct}%</span></div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:10px;">
+    ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
+    <span style="font-size:11px;color:var(--text3);align-self:center;">${rCurrent.tag}</span>
+  </div>`;
+  if(reviewType==='blank'&&rCurrent.example){
+    // 빈칸 모드
+    const words=rCurrent.en.split(' ');
+    const keyWords=words.filter(w=>w.length>3);
+    const targetWord=keyWords[Math.floor(Math.random()*keyWords.length)]||words[0];
+    const clean=targetWord.replace(/[.,!?;:]/g,'');
+    const blankedExample=rCurrent.example.replace(new RegExp(clean,'gi'),`<span class="blank" id="blank-word">${clean}</span>`);
+    area.innerHTML=progressHtml+`
+      <div class="review-card">
+        <div class="rc-label">빈칸 채우기</div>
+        <div class="rc-main" style="font-size:16px;line-height:1.8;">${blankedExample}</div>
+        <div class="rc-sub" style="margin-top:12px;">힌트: ${rCurrent.ko}</div>
+      </div>
+      <button class="flip-btn" style="margin-top:10px;" onclick="revealBlank()">정답 보기</button>`;
+  } else {
+    // 한→영 모드
+    area.innerHTML=progressHtml+`
+      <div class="review-card">
+        <div class="rc-label">한국어 → 영어</div>
+        <div class="rc-main">${rCurrent.ko}</div>
+      </div>
+      <button class="flip-btn" style="margin-top:10px;" onclick="flipCard()">정답 보기</button>`;
+  }
 }
 
-// ── 단어장 ────────────────────────────────────────
-let wordTab = 'all';
-function switchWordTab(el, tab) {
-  document.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active'); wordTab=tab; renderWords(tab);
-}
-function renderWords(tab) {
-  const list = document.getElementById('words-list');
-  const filtered = tab==='all'?items:items.filter(i=>i.type===tab);
-  if (!filtered.length) { list.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요</div>'; return; }
-  list.innerHTML = filtered.map(renderItemRow).join('');
+function revealBlank(){
+  const blank=document.getElementById('blank-word');
+  if(blank){blank.classList.add('revealed');}
+  const btn=document.querySelector('.flip-btn');
+  if(btn){
+    btn.textContent='다음';btn.onclick=()=>showRatingButtons();
+  }
 }
 
-// ── 세트 페이지 ────────────────────────────────────
-let currentSetId = null; // null = 목록, number = 세트 상세
-
-function renderSetsPage() {
-  if (currentSetId !== null) renderSetDetail(currentSetId);
-  else renderSetsList();
-}
-
-function renderSetsList() {
-  const el = document.getElementById('sets-main');
-  el.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:700;color:var(--text);">내 세트</div>
-      <button onclick="promptCreateSet()" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:700;">+ 새 세트</button>
+function showRatingButtons(){
+  const area=document.getElementById('review-area');
+  const total=rDone+rQueue.length+1;
+  const pct=Math.round((rDone/total)*100);
+  // 정답 + 평가 버튼 표시
+  area.innerHTML+=`
+  <div style="margin-top:10px;">
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">얼마나 잘 기억했어?</div>
+    <div class="answer-row">
+      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
+      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
+      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
     </div>
-    ${sets.length===0
-      ? `<div class="empty-state">아직 세트가 없어요<br>"+ 새 세트" 버튼으로 만들어봐!</div>`
-      : sets.map(s => {
-          const cnt = itemSets.filter(x=>x.set_id===s.id).length;
-          const due = getSetItems(s.id).filter(i=>!i.next_review||i.next_review<=today()).length;
-          return `<div class="card" style="margin-bottom:10px;cursor:pointer;" onclick="openSet(${s.id})">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-              <div>
-                <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">${s.name}</div>
-                <div style="display:flex;gap:8px;">
-                  <span style="font-size:11px;color:var(--text3);font-family:var(--font-mono);">${cnt}개 카드</span>
-                  ${due>0?`<span style="font-size:11px;color:var(--accent);font-family:var(--font-mono);">복습 ${due}개</span>`:''}
-                </div>
-              </div>
-              <div style="display:flex;gap:6px;align-items:center;">
-                ${due>0?`<button onclick="event.stopPropagation();startSetReview(${s.id})" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:11px;cursor:pointer;font-family:var(--font-body);font-weight:700;">복습</button>`:''}
-                <button onclick="event.stopPropagation();confirmDeleteSet(${s.id})" style="background:none;border:1px solid var(--border2);color:var(--text3);border-radius:8px;padding:7px 10px;font-size:11px;cursor:pointer;">삭제</button>
+  </div>`;
+}
+
+function flipCard(){
+  const area=document.getElementById('review-area');
+  const total=rDone+rQueue.length+1;
+  const pct=Math.round((rDone/total)*100);
+  area.innerHTML=`<div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:5px;"><span>${rDone+1} / ${total}</span><span>${pct}%</span></div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:10px;">
+    ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
+  </div>
+  <div class="review-card">
+    <div class="rc-label">정답</div>
+    <div class="rc-answer-main">${rCurrent.en}</div>
+    ${rCurrent.example?`<div class="rc-answer-example">"${rCurrent.example}"</div>`:''}
+  </div>
+  <div style="margin-top:10px;">
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">얼마나 잘 기억했어?</div>
+    <div class="answer-row">
+      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
+      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
+      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
+    </div>
+  </div>`;
+}
+
+async function rateCard(r){
+  const newLevel=r===0?Math.max(0,(rCurrent.level||0)-1):r===1?(rCurrent.level||0):Math.min(6,(rCurrent.level||0)+1);
+  await updateItem(rCurrent.id,{level:newLevel,next_review:srsNext(newLevel)});
+  rDone++;nextCard();
+}
+
+// ── WORDS ─────────────────────────────────────────
+let wordTab='all';
+function switchWordTab(el,tab){
+  document.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');wordTab=tab;renderWords(tab);
+}
+function renderWords(tab){
+  const list=document.getElementById('words-list');
+  const filtered=tab==='all'?items:items.filter(i=>i.type===tab);
+  if(!filtered.length){list.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요</div>';return;}
+  list.innerHTML=filtered.map(renderItemRow).join('');
+}
+
+// ── DECKS PAGE ────────────────────────────────────
+let deckView={mode:'list',deckId:null,setId:null}; // mode: list | deck | set
+
+function renderDecksPage(){
+  if(deckView.mode==='set') renderSetDetail();
+  else if(deckView.mode==='deck') renderDeckDetail();
+  else renderDecksList();
+}
+
+function renderDecksList(){
+  const el=document.getElementById('decks-main');
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:14px;font-weight:700;color:var(--text);">내 덱</div>
+      <button class="action-btn" onclick="promptCreateDeck()">+ 새 덱</button>
+    </div>
+    ${decks.length===0
+      ?'<div class="empty-state">아직 덱이 없어요<br>"+ 새 덱" 버튼으로 만들어봐!</div>'
+      :decks.map(d=>{
+        const dSets=sets.filter(s=>s.deck_id===d.id);
+        const dItems=getDeckItems(d.id);
+        const due=dItems.filter(i=>!i.next_review||i.next_review<=today()).length;
+        return `<div class="deck-card" onclick="openDeck(${d.id})">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div class="deck-name">📚 ${d.name}</div>
+              <div class="deck-meta">
+                <span>${dSets.length}개 세트</span>
+                <span>${dItems.length}개 카드</span>
+                ${due>0?`<span class="due">복습 ${due}개</span>`:''}
               </div>
             </div>
-          </div>`;
-        }).join('')
+            <div style="display:flex;gap:6px;">
+              ${due>0?`<button onclick="event.stopPropagation();startDeckReview(${d.id})" class="action-btn" style="font-size:11px;padding:6px 10px;">복습</button>`:''}
+              <button onclick="event.stopPropagation();confirmDeleteDeck(${d.id})" class="ghost-btn" style="font-size:11px;">삭제</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')
     }`;
 }
 
-async function promptCreateSet() {
-  const name = prompt('세트 이름을 입력해줘\n예: 비즈니스 표현, 테크 용어, 업무 1-1');
-  if (!name || !name.trim()) return;
-  await createSet(name.trim());
-  renderSetsList();
-}
-
-async function confirmDeleteSet(id) {
-  const s = sets.find(x=>x.id===id);
-  if (!confirm(`"${s?.name}" 세트를 삭제할까?\n(카드 자체는 삭제되지 않아)`)) return;
-  await deleteSet(id);
-  renderSetsList();
-}
-
-function openSet(id) {
-  currentSetId = id;
-  renderSetDetail(id);
-}
-
-function renderSetDetail(setId) {
-  const set = sets.find(s=>s.id===setId);
-  if (!set) { currentSetId=null; renderSetsList(); return; }
-  const setItemIds = itemSets.filter(s=>s.set_id===setId).map(s=>s.item_id);
-  const setItemList = items.filter(i=>setItemIds.includes(i.id));
-  const notInSet = items.filter(i=>!setItemIds.includes(i.id));
-  const due = setItemList.filter(i=>!i.next_review||i.next_review<=today()).length;
-  const el = document.getElementById('sets-main');
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-      <button onclick="currentSetId=null;renderSetsList()" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;">← 목록</button>
-      <div style="font-size:15px;font-weight:700;color:var(--text);flex:1;">${set.name}</div>
-      ${due>0?`<button onclick="startSetReview(${setId})" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;font-weight:700;">복습 시작 (${due})</button>`:''}
+function renderDeckDetail(){
+  const deck=decks.find(d=>d.id===deckView.deckId);
+  if(!deck){deckView={mode:'list'};renderDecksList();return;}
+  const deckSets=sets.filter(s=>s.deck_id===deck.id);
+  const dItems=getDeckItems(deck.id);
+  const due=dItems.filter(i=>!i.next_review||i.next_review<=today()).length;
+  const el=document.getElementById('decks-main');
+  el.innerHTML=`
+    <div class="breadcrumb">
+      <button onclick="deckView={mode:'list'};renderDecksList()">덱 목록</button>
+      <span>›</span>
+      <span style="color:var(--text);">${deck.name}</span>
     </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;">📚 ${deck.name}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;">${dItems.length}개 카드 ${due>0?`· 복습 ${due}개`:''}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        ${due>0?`<button class="action-btn" onclick="startDeckReview(${deck.id})">복습</button>`:''}
+        <button class="ghost-btn" onclick="promptCreateSet(${deck.id})">+ 세트</button>
+      </div>
+    </div>
+    ${deckSets.length===0
+      ?'<div class="empty-state">아직 세트가 없어요<br>"+ 세트" 버튼으로 만들어봐!</div>'
+      :deckSets.map(s=>{
+        const sItems=getSetItems(s.id);
+        const sDue=sItems.filter(i=>!i.next_review||i.next_review<=today()).length;
+        return `<div class="set-card" onclick="openSet(${s.id})">
+          <div>
+            <div class="set-name">📂 ${s.name}</div>
+            <div class="set-meta">${sItems.length}개 카드 ${sDue>0?`· 복습 ${sDue}개`:''}</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            ${sDue>0?`<button onclick="event.stopPropagation();startSetReview(${s.id})" class="action-btn" style="font-size:11px;padding:6px 10px;">복습</button>`:''}
+            <button onclick="event.stopPropagation();confirmDeleteSet(${s.id})" class="ghost-btn" style="font-size:11px;">삭제</button>
+          </div>
+        </div>`;
+      }).join('')
+    }`;
+}
 
-    <!-- 이 세트의 카드들 -->
+function renderSetDetail(){
+  const set=sets.find(s=>s.id===deckView.setId);
+  if(!set){deckView={mode:'deck',deckId:deckView.deckId};renderDeckDetail();return;}
+  const deck=decks.find(d=>d.id===set.deck_id);
+  const setItems=getSetItems(set.id);
+  const notInSet=items.filter(i=>!itemSets.find(s=>s.set_id===set.id&&s.item_id===i.id));
+  const due=setItems.filter(i=>!i.next_review||i.next_review<=today()).length;
+  const el=document.getElementById('decks-main');
+  el.innerHTML=`
+    <div class="breadcrumb">
+      <button onclick="deckView={mode:'list'};renderDecksList()">덱 목록</button>
+      <span>›</span>
+      <button onclick="deckView={mode:'deck',deckId:${deck?.id}};renderDeckDetail()">${deck?.name||'덱'}</button>
+      <span>›</span>
+      <span style="color:var(--text);">${set.name}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;">📂 ${set.name}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;">${setItems.length}개 카드 ${due>0?`· 복습 ${due}개`:''}</div>
+      </div>
+      ${due>0?`<button class="action-btn" onclick="startSetReview(${set.id})">복습 시작</button>`:'<div style="font-size:12px;color:var(--text3);">복습 없음</div>'}
+    </div>
+    <!-- 세트 카드 -->
     <div class="card" style="margin-bottom:10px;">
-      <div class="card-title">세트 카드 (${setItemList.length}개)</div>
-      ${setItemList.length===0
-        ? `<div class="empty-state" style="padding:16px;">아직 카드가 없어요<br>아래에서 추가해봐!</div>`
-        : setItemList.map(w=>{
-            const lvl=w.level||0;
-            const cls=lvl===0?'level-new':lvl<4?'level-learning':'level-known';
-            const lbl=lvl===0?'NEW':lvl<4?'Lv.'+lvl:'✓';
-            const typePill=w.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>';
-            return `<div class="item-row">
-              <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">${typePill}<span class="level-pill ${cls}">${lbl}</span></div>
-                <div class="item-en">${w.en}</div>
-                <div class="item-ko">${w.ko}</div>
-              </div>
-              <button onclick="removeFromSet(${setId},${w.id})" style="background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;flex-shrink:0;">제거</button>
-            </div>`;
-          }).join('')
-      }
-    </div>
-
-    <!-- 추가 가능한 카드 -->
-    ${notInSet.length>0?`
-    <div class="card">
-      <div class="card-title">카드 추가하기 (${notInSet.length}개)</div>
-      <input type="text" id="set-search" placeholder="검색..." oninput="filterSetCandidates(${setId})" style="margin-bottom:10px;" />
-      <div id="set-candidates">
-        ${notInSet.slice(0,20).map(w=>`
+      <div class="card-title">카드 (${setItems.length})</div>
+      ${setItems.length===0
+        ?'<div class="empty-state" style="padding:16px;">아직 카드가 없어요</div>'
+        :setItems.map(w=>`
           <div class="item-row">
             <div style="flex:1;min-width:0;">
               <div class="item-en">${w.en}</div>
               <div class="item-ko">${w.ko}</div>
             </div>
-            <button onclick="addToSet(${setId},${w.id})" style="background:var(--accent-light);border:1px solid rgba(45,106,45,0.2);color:var(--accent);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;flex-shrink:0;font-weight:700;">+ 추가</button>
+            <button onclick="removeFromSet(${set.id},${w.id})" class="ghost-btn" style="font-size:11px;">제거</button>
+          </div>`).join('')
+      }
+    </div>
+    <!-- 카드 추가 -->
+    ${notInSet.length>0?`
+    <div class="card">
+      <div class="card-title">카드 추가 (${notInSet.length})</div>
+      <input type="text" id="set-search" placeholder="검색..." oninput="filterSetCandidates(${set.id})" style="margin-bottom:10px;" />
+      <div id="set-candidates">
+        ${notInSet.slice(0,15).map(w=>`
+          <div class="item-row">
+            <div style="flex:1;min-width:0;"><div class="item-en">${w.en}</div><div class="item-ko">${w.ko}</div></div>
+            <button onclick="addToSet(${set.id},${w.id})" class="action-btn" style="font-size:11px;padding:5px 10px;">추가</button>
           </div>`).join('')}
-        ${notInSet.length>20?`<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px;">검색으로 더 찾아봐</div>`:''}
+        ${notInSet.length>15?`<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px;">검색으로 더 찾아봐</div>`:''}
       </div>
     </div>`:''}`;
 }
 
-function filterSetCandidates(setId) {
-  const q = document.getElementById('set-search').value.toLowerCase();
-  const setItemIds = itemSets.filter(s=>s.set_id===setId).map(s=>s.item_id);
-  const notInSet = items.filter(i=>!setItemIds.includes(i.id));
-  const filtered = q ? notInSet.filter(i=>i.en.toLowerCase().includes(q)||i.ko.toLowerCase().includes(q)) : notInSet.slice(0,20);
-  document.getElementById('set-candidates').innerHTML = filtered.slice(0,20).map(w=>`
+function filterSetCandidates(setId){
+  const q=document.getElementById('set-search').value.toLowerCase();
+  const notInSet=items.filter(i=>!itemSets.find(s=>s.set_id===setId&&s.item_id===i.id));
+  const filtered=q?notInSet.filter(i=>i.en.toLowerCase().includes(q)||i.ko.toLowerCase().includes(q)):notInSet.slice(0,15);
+  document.getElementById('set-candidates').innerHTML=filtered.slice(0,15).map(w=>`
     <div class="item-row">
-      <div style="flex:1;min-width:0;">
-        <div class="item-en">${w.en}</div>
-        <div class="item-ko">${w.ko}</div>
-      </div>
-      <button onclick="addToSet(${setId},${w.id})" style="background:var(--accent-light);border:1px solid rgba(45,106,45,0.2);color:var(--accent);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer;flex-shrink:0;font-weight:700;">+ 추가</button>
+      <div style="flex:1;min-width:0;"><div class="item-en">${w.en}</div><div class="item-ko">${w.ko}</div></div>
+      <button onclick="addToSet(${setId},${w.id})" class="action-btn" style="font-size:11px;padding:5px 10px;">추가</button>
     </div>`).join('');
 }
 
-async function addToSet(setId, itemId) {
-  await addItemToSet(setId, itemId);
-  renderSetDetail(setId);
+async function openDeck(id){deckView={mode:'deck',deckId:id};renderDeckDetail();}
+async function openSet(id){const s=sets.find(x=>x.id===id);deckView={mode:'set',deckId:s?.deck_id,setId:id};renderSetDetail();}
+async function promptCreateDeck(){
+  const name=prompt('덱 이름을 입력해줘\n예: 비즈니스 영어, 일상 회화, 테크 용어');
+  if(!name?.trim()) return;
+  await createDeck(name.trim());populateAddSelects();renderDecksList();
 }
-async function removeFromSet(setId, itemId) {
-  await removeItemFromSet(setId, itemId);
-  renderSetDetail(setId);
+async function promptCreateSet(deckId){
+  const name=prompt('세트 이름을 입력해줘\n예: 이메일 표현, 회의 표현, 1-1');
+  if(!name?.trim()) return;
+  await createSet(deckId,name.trim());populateAddSelects();renderDeckDetail();
 }
+async function confirmDeleteDeck(id){
+  const d=decks.find(x=>x.id===id);
+  if(!confirm(`"${d?.name}" 덱을 삭제할까?\n(세트와 카드 연결도 삭제돼. 카드 자체는 유지됨)`)) return;
+  await deleteDeck(id);populateAddSelects();renderDecksList();
+}
+async function confirmDeleteSet(id){
+  const s=sets.find(x=>x.id===id);
+  if(!confirm(`"${s?.name}" 세트를 삭제할까?`)) return;
+  await deleteSet(id);populateAddSelects();
+  if(deckView.mode==='set') deckView={mode:'deck',deckId:s.deck_id};
+  renderDecksPage();
+}
+async function addToSet(setId,itemId){await addItemToSet(setId,itemId);renderSetDetail();}
+async function removeFromSet(setId,itemId){await removeItemFromSet(setId,itemId);renderSetDetail();}
+function startSetReview(setId){reviewMode=setId;reviewType='ko-en';showPage('review');}
+function startDeckReview(deckId){reviewMode='deck:'+deckId;reviewType='ko-en';showPage('review');}
 
-// ── 세트 복습 ──────────────────────────────────────
-let reviewMode = 'all'; // 'all' or setId
-function startSetReview(setId) {
-  reviewMode = setId;
-  showPage('review');
-}
+// ── SW ────────────────────────────────────────────
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-// ── 서비스 워커 등록 ───────────────────────────────
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
-
-// ── 시작 ──────────────────────────────────────────
 initAuth();
 </script>
 </body>
