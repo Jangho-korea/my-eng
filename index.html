@@ -176,6 +176,15 @@
     .mode-btn { padding:12px; border-radius:var(--r); border:1px solid var(--border2); background:var(--surface); font-size:13px; cursor:pointer; font-family:var(--font-body); text-align:center; transition:all 0.15s; }
     .mode-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
 
+    /* SPEAK */
+    .speak-btn { background:none; border:none; color:var(--accent); cursor:pointer; font-size:15px; padding:2px 4px; opacity:0.7; transition:opacity 0.15s; vertical-align:middle; }
+    .speak-btn:hover { opacity:1; }
+    .speak-btn-lg { background:var(--accent-light); border:1px solid rgba(45,106,45,0.2); color:var(--accent); border-radius:8px; padding:5px 10px; font-size:14px; cursor:pointer; font-family:var(--font-body); margin-top:8px; display:inline-block; }
+
+    /* STATS */
+    .level-bar-wrap { background:var(--surface2); border-radius:4px; height:10px; overflow:hidden; flex:1; }
+    .level-bar-fill { height:100%; border-radius:4px; transition:width 0.5s ease; }
+
     /* MISC */
     .empty-state { text-align:center; padding:32px 16px; color:var(--text3); font-size:13px; line-height:1.7; }
     .delete-btn { background:none; border:none; color:var(--text3); cursor:pointer; font-size:13px; padding:4px 6px; flex-shrink:0; }
@@ -219,6 +228,7 @@
     <button class="nav-btn" onclick="showPage('review')">Review</button>
     <button class="nav-btn" onclick="showPage('words')">Words</button>
     <button class="nav-btn" onclick="showPage('decks')">Decks</button>
+    <button class="nav-btn" onclick="showPage('stats')">Stats</button>
   </div>
 
   <!-- HOME -->
@@ -398,6 +408,8 @@
   <div class="page" id="page-decks">
     <div id="decks-main"></div>
   </div>
+
+  <div class="page" id="page-stats"></div>
 </div>
 
 <script>
@@ -566,7 +578,7 @@ function updateStreak(){
 }
 
 // ── NAV ───────────────────────────────────────────
-const navMap={home:0,translate:1,add:2,review:3,words:4,decks:5};
+const navMap={home:0,translate:1,add:2,review:3,words:4,decks:5,stats:6};
 function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -577,7 +589,17 @@ function showPage(name){
   if(name==='words') renderWords(wordTab);
   if(name==='decks') renderDecksPage();
   if(name==='add') populateAddSelects();
+  if(name==='stats') renderStats();
   updateHome();
+}
+
+// ── SPEAK ─────────────────────────────────────────
+function speak(text){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US'; u.rate=0.9;
+  speechSynthesis.speak(u);
 }
 
 // ── HOME ──────────────────────────────────────────
@@ -619,7 +641,8 @@ function renderItemRow(w, showEdit=false){
       <div class="item-en">${w.en}</div><div class="item-ko">${w.ko}</div>
       ${w.example?`<div class="item-example">"${w.example}"</div>`:''}
     </div>
-    <div style="display:flex;gap:4px;flex-shrink:0;">
+    <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start;">
+      <button class="speak-btn" onclick="speak('${esc(w.en)}')" title="Pronounce">🔊</button>
       ${showEdit?`<button class="ghost-btn" style="font-size:11px;padding:4px 8px;" onclick="editItem(${w.id})">Edit</button>`:''}
       <button class="delete-btn" onclick="deleteItem(${w.id})">✕</button>
     </div>
@@ -959,37 +982,47 @@ async function importCsvData(btn){
 }
 
 // ── REVIEW ────────────────────────────────────────
-let rQueue=[],rCurrent=null,rDone=0,reviewMode='all',reviewType='ko-en';
+let rQueue=[],rCurrent=null,rDone=0,reviewMode='all',reviewType='ko-en',reviewTag='all';
 
 function renderReview(){
-  const t=today();
-  let pool;
-  if(reviewMode==='all') pool=items.filter(w=>!w.next_review||w.next_review<=t);
-  else if(typeof reviewMode==='string'&&reviewMode.startsWith('deck:')) pool=getDeckItems(Number(reviewMode.split(':')[1])).filter(w=>!w.next_review||w.next_review<=t);
-  else pool=getSetItems(Number(reviewMode)).filter(w=>!w.next_review||w.next_review<=t);
-  rQueue=[...pool];rDone=0;
   const area=document.getElementById('review-area');
-  if(reviewMode!=='all'){
-    // 모드 선택 UI
-    area.innerHTML=`
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <button onclick="reviewMode='all';renderDecksPage();showPage('decks')" class="ghost-btn">← Back to decks</button>
-        <div style="font-size:12px;color:var(--text2);flex:1;">${rQueue.length} cards to review</div>
+  reviewTag='all';
+  const allTags=[...new Set(items.map(i=>i.tag).filter(Boolean))].sort();
+  const tagBtns=['all',...allTags].map(t=>`<button class="tag${t==='all'?' active':''}" onclick="reviewTag='${esc(t)}';document.querySelectorAll('#rv-tag-row .tag').forEach(b=>b.classList.remove('active'));this.classList.add('active');" style="font-size:11px;">${t==='all'?'All':t}</button>`).join('');
+  const backBtn=reviewMode!=='all'?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><button onclick="reviewMode='all';renderDecksPage();showPage('decks')" class="ghost-btn">← Back to decks</button></div>`:'';
+  area.innerHTML=`
+    ${backBtn}
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-title">Filter by tag</div>
+      <div id="rv-tag-row" class="tag-row">${tagBtns}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Select review mode</div>
+      <div class="mode-select-row" style="grid-template-columns:1fr 1fr;">
+        <button class="mode-btn" onclick="reviewType='ko-en';startReviewCards()">🇰🇷→🇺🇸<br><span style="font-size:11px;color:var(--text3);">KO → EN</span></button>
+        <button class="mode-btn" onclick="reviewType='blank';startReviewCards()">✏️ Blank<br><span style="font-size:11px;color:var(--text3);">Fill in blank</span></button>
+        <button class="mode-btn" onclick="reviewType='ko-example';startReviewCards()">📖 Example<br><span style="font-size:11px;color:var(--text3);">KO → Example</span></button>
+        <button class="mode-btn" onclick="reviewType='focus';startReviewCards()" style="border-color:var(--yellow);background:#fffbeb;">💪 Focus<br><span style="font-size:11px;color:var(--yellow);">Weak cards (lv 0-1)</span></button>
       </div>
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title">Select review mode</div>
-        <div class="mode-select-row" style="grid-template-columns:1fr 1fr 1fr;">
-          <button class="mode-btn" onclick="reviewType='ko-en';startReviewCards()">🇰🇷→🇺🇸<br><span style="font-size:11px;color:var(--text3);">KO → EN</span></button>
-          <button class="mode-btn" onclick="reviewType='blank';startReviewCards()">✏️ Blank<br><span style="font-size:11px;color:var(--text3);">Fill in the blank</span></button>
-          <button class="mode-btn" onclick="reviewType='ko-example';startReviewCards()">📖 Example<br><span style="font-size:11px;color:var(--text3);">KO → Example</span></button>
-        </div>
-      </div>`;
-  } else {
-    startReviewCards();
-  }
+    </div>`;
 }
 
-function startReviewCards(){ nextCard(); }
+function startReviewCards(){
+  const t=today();
+  let pool;
+  if(reviewType==='focus'){
+    if(reviewMode==='all') pool=items.filter(w=>(w.level||0)<=1);
+    else if(typeof reviewMode==='string'&&reviewMode.startsWith('deck:')) pool=getDeckItems(Number(reviewMode.split(':')[1])).filter(w=>(w.level||0)<=1);
+    else pool=getSetItems(Number(reviewMode)).filter(w=>(w.level||0)<=1);
+  } else {
+    if(reviewMode==='all') pool=items.filter(w=>!w.next_review||w.next_review<=t);
+    else if(typeof reviewMode==='string'&&reviewMode.startsWith('deck:')) pool=getDeckItems(Number(reviewMode.split(':')[1])).filter(w=>!w.next_review||w.next_review<=t);
+    else pool=getSetItems(Number(reviewMode)).filter(w=>!w.next_review||w.next_review<=t);
+  }
+  if(reviewTag!=='all') pool=pool.filter(w=>w.tag===reviewTag);
+  rQueue=[...pool];rDone=0;
+  nextCard();
+}
 
 function nextCard(){
   const area=document.getElementById('review-area');
@@ -1034,9 +1067,10 @@ function nextCard(){
       </div>
       <button class="flip-btn" style="margin-top:10px;" onclick="revealBlank()">Show answer</button>`;
   } else {
+    const focusLabel=reviewType==='focus'?'💪 Focus — KO → EN':'Korean → English';
     area.innerHTML=progressHtml+`
       <div class="review-card">
-        <div class="rc-label">Korean → English</div>
+        <div class="rc-label">${focusLabel}</div>
         <div class="rc-main">${rCurrent.ko}</div>
       </div>
       <button class="flip-btn" style="margin-top:10px;" onclick="flipCard()">Show answer</button>`;
@@ -1081,8 +1115,8 @@ function flipCard(){
   </div>
   <div class="review-card">
     <div class="rc-label">Answer</div>
-    <div class="rc-answer-main">${rCurrent.en}</div>
-    ${rCurrent.example?`<div class="rc-answer-example">"${rCurrent.example}"</div>`:''}
+    <div class="rc-answer-main">${rCurrent.en} <button class="speak-btn" onclick="speak('${esc(rCurrent.en)}')" title="Pronounce">🔊</button></div>
+    ${rCurrent.example?`<div class="rc-answer-example">"${rCurrent.example}" <button class="speak-btn" style="font-size:12px;" onclick="speak('${esc(rCurrent.example)}')" title="Pronounce">🔊</button></div>`:''}
   </div>
   <div style="margin-top:10px;">
     <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
@@ -1107,7 +1141,7 @@ function flipCardExample(){
   </div>
   <div class="review-card">
     <div class="rc-label">Answer</div>
-    <div class="rc-answer-main">${rCurrent.example}</div>
+    <div class="rc-answer-main">${rCurrent.example} <button class="speak-btn" onclick="speak('${esc(rCurrent.example)}')" title="Pronounce">🔊</button></div>
     <div class="rc-sub" style="margin-top:8px;">${rCurrent.en} — ${rCurrent.ko}</div>
   </div>
   <div style="margin-top:10px;">
@@ -1357,6 +1391,80 @@ function downloadSetXlsx(setId){
   const ws=XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb,ws,set.name.slice(0,31));
   XLSX.writeFile(wb,set.name+'.xlsx');
+}
+
+// ── STATS ─────────────────────────────────────────
+function renderStats(){
+  const el=document.getElementById('page-stats');
+  const total=items.length;
+  const due=dueItems().length;
+  const levelColors=['#93c5fd','#60a5fa','#fbbf24','#fb923c','#4ade80','#34d399','#059669'];
+  const levelLabels=['0 — New','1 — Learning','2 — Reviewing','3 — Familiar','4 — Strong','5 — Mastered','6 — Expert'];
+  const counts=[0,1,2,3,4,5,6].map(l=>items.filter(i=>(i.level||0)===l).length);
+  const retained=counts.slice(3).reduce((a,b)=>a+b,0);
+  const retPct=total>0?Math.round(retained/total*100):0;
+  const retColor=retPct>=70?'var(--green)':retPct>=40?'var(--yellow)':'var(--red)';
+  const maxCount=Math.max(...counts,1);
+  const bars=[0,1,2,3,4,5,6].map(l=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);width:90px;flex-shrink:0;">${levelLabels[l]}</div>
+      <div class="level-bar-wrap">
+        <div class="level-bar-fill" style="background:${levelColors[l]};width:${Math.round(counts[l]/maxCount*100)}%;"></div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);width:28px;text-align:right;flex-shrink:0;">${counts[l]}</div>
+    </div>`).join('');
+  const tagCounts=items.reduce((acc,i)=>{acc[i.tag||'Other']=(acc[i.tag||'Other']||0)+1;return acc;},{});
+  const tagRows=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).map(([tag,n])=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
+      <span style="font-family:var(--font-mono);color:var(--text2);">${tag}</span>
+      <span style="font-family:var(--font-mono);color:var(--text3);">${n}</span>
+    </div>`).join('');
+  el.innerHTML=`
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total Cards</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--red);">${due}</div><div class="stat-label">Due Today</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:${retColor};">${retPct}%</div><div class="stat-label">Retained</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">SRS Level Distribution</div>
+      ${total===0?'<div class="empty-state">No cards yet — add some to get started!</div>':bars}
+      ${total>0?`<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.7;">
+        Level 0–2 = still learning &nbsp;·&nbsp; Level 3+ = retained &nbsp;·&nbsp; Level 6 = expert
+      </div>`:''}
+    </div>
+    <div class="card">
+      <div class="card-title">Retention Rate</div>
+      <div style="text-align:center;padding:12px 0 8px;">
+        <div style="font-family:var(--font-mono);font-size:42px;font-weight:500;color:${retColor};">${retPct}%</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;">${retained} of ${total} cards at level 3+</div>
+        <div style="margin-top:16px;background:var(--surface2);border-radius:var(--r);height:12px;overflow:hidden;">
+          <div style="background:${retColor};height:100%;width:${retPct}%;border-radius:var(--r);transition:width 0.5s ease;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;gap:0;flex-direction:row;">
+      <div style="flex:1;text-align:center;padding:12px 0;">
+        <div style="font-size:28px;">🔥</div>
+        <div style="font-family:var(--font-mono);font-size:26px;font-weight:500;color:var(--accent);margin-top:4px;">${streak}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">day streak</div>
+      </div>
+      <div style="width:1px;background:var(--border);margin:12px 0;"></div>
+      <div style="flex:1;text-align:center;padding:12px 0;">
+        <div style="font-size:28px;">📝</div>
+        <div style="font-family:var(--font-mono);font-size:26px;font-weight:500;color:var(--blue);margin-top:4px;">${items.filter(i=>i.type==='expr').length}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">expressions</div>
+      </div>
+      <div style="width:1px;background:var(--border);margin:12px 0;"></div>
+      <div style="flex:1;text-align:center;padding:12px 0;">
+        <div style="font-size:28px;">💬</div>
+        <div style="font-family:var(--font-mono);font-size:26px;font-weight:500;color:var(--purple);margin-top:4px;">${items.filter(i=>i.type==='sent').length}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">sentences</div>
+      </div>
+    </div>
+    ${Object.keys(tagCounts).length>0?`<div class="card">
+      <div class="card-title">Cards by Tag</div>
+      ${tagRows}
+    </div>`:''}`;
 }
 
 // ── SW ────────────────────────────────────────────
