@@ -428,6 +428,27 @@ let editingId = null;
 
 // ── UTILS ─────────────────────────────────────────
 function today() { return new Date().toISOString().split('T')[0]; }
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+const REVIEW_HIST_SK='my_eng_review_hist';
+let reviewHistory={};
+function loadReviewHistory(){try{reviewHistory=JSON.parse(localStorage.getItem(REVIEW_HIST_SK)||'{}');}catch(e){reviewHistory={};}}
+function recordReview(){
+  const t=today();reviewHistory[t]=(reviewHistory[t]||0)+1;
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);
+  const cutStr=cutoff.toISOString().split('T')[0];
+  Object.keys(reviewHistory).forEach(d=>{if(d<cutStr)delete reviewHistory[d];});
+  localStorage.setItem(REVIEW_HIST_SK,JSON.stringify(reviewHistory));
+}
+function computeBestStreak(){
+  const dates=Object.keys(reviewHistory).filter(d=>reviewHistory[d]>0).sort();
+  let best=0,cur=0;
+  for(let i=0;i<dates.length;i++){
+    const gap=i>0?(new Date(dates[i])-new Date(dates[i-1]))/86400000:999;
+    cur=gap===1?cur+1:1;if(cur>best)best=cur;
+  }
+  return Math.max(best,streak);
+}
 function srsNext(lvl) {
   const days=[0,1,3,7,14,30,90];
   const dt=new Date(); dt.setDate(dt.getDate()+days[Math.min(lvl,days.length-1)]);
@@ -478,6 +499,7 @@ function showApp(){
   document.getElementById('app').style.display='flex';
   apiKey=localStorage.getItem(API_KEY_SK)||'';
   apiProvider=localStorage.getItem(API_PROVIDER_SK)||'openai';
+  loadReviewHistory();
   loadAll();
 }
 function showAuthScreen(){
@@ -1052,7 +1074,7 @@ function startReviewCards(){
     else pool=getSetItems(Number(reviewMode)).filter(w=>!w.next_review||w.next_review<=t);
   }
   if(reviewTag!=='all') pool=pool.filter(w=>w.tag===reviewTag);
-  rQueue=[...pool];rDone=0;
+  rQueue=shuffle([...pool]);rDone=0;
   nextCard();
 }
 
@@ -1190,6 +1212,7 @@ function flipCardExample(){
 async function rateCard(r){
   const newLevel=r===0?Math.max(0,(rCurrent.level||0)-1):r===1?(rCurrent.level||0):Math.min(6,(rCurrent.level||0)+1);
   await updateItem(rCurrent.id,{level:newLevel,next_review:srsNext(newLevel)});
+  recordReview();
   rDone++;nextCard();
 }
 
@@ -1430,75 +1453,129 @@ function downloadSetXlsx(setId){
 // ── STATS ─────────────────────────────────────────
 function renderStats(){
   const el=document.getElementById('page-stats');
+  const todayStr=today();
   const total=items.length;
   const due=dueItems().length;
+  const doneToday=reviewHistory[todayStr]||0;
+
+  // ── Streak ──
+  const bestStreak=computeBestStreak();
+
+  // ── 30-day dot grid ──
+  const dots30=[];
+  for(let i=29;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const ds=d.toISOString().split('T')[0];
+    dots30.push({date:ds,count:reviewHistory[ds]||0});
+  }
+  const max30=Math.max(...dots30.map(d=>d.count),1);
+  const dotGrid=dots30.map(d=>{
+    const opacity=d.count>0?Math.max(0.25,d.count/max30):0;
+    const bg=d.count>0?`rgba(45,106,45,${opacity.toFixed(2)})`:'var(--border)';
+    const isToday=d.date===todayStr;
+    return `<div style="aspect-ratio:1;background:${bg};border-radius:3px;${isToday?'outline:2px solid var(--accent);outline-offset:1px;':''}" title="${d.date}: ${d.count} cards"></div>`;
+  }).join('');
+
+  // ── 7-day bar chart ──
+  const last7=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const ds=d.toISOString().split('T')[0];
+    const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    last7.push({date:ds,day:dayNames[d.getDay()],count:reviewHistory[ds]||0});
+  }
+  const max7=Math.max(...last7.map(d=>d.count),1);
+  const barCols=last7.map(d=>{
+    const h=d.count>0?Math.max(8,Math.round(d.count/max7*100)):2;
+    const isToday=d.date===todayStr;
+    const bg=isToday?'var(--accent)':'rgba(45,106,45,0.3)';
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div style="font-size:9px;color:${isToday?'var(--accent)':'var(--text3)'};font-family:var(--font-mono);font-weight:${isToday?700:400};">${d.count||''}</div>
+      <div style="width:100%;flex:1;display:flex;align-items:flex-end;">
+        <div style="width:100%;background:${bg};border-radius:3px 3px 0 0;height:${h}%;min-height:${d.count>0?'4px':'2px'};"></div>
+      </div>
+      <div style="font-size:9px;color:${isToday?'var(--accent)':'var(--text3)'};font-family:var(--font-mono);font-weight:${isToday?700:400};">${d.day}</div>
+    </div>`;
+  }).join('');
+
+  // ── SRS levels ──
   const levelColors=['#93c5fd','#60a5fa','#fbbf24','#fb923c','#4ade80','#34d399','#059669'];
-  const levelLabels=['0 — New','1 — Learning','2 — Reviewing','3 — Familiar','4 — Strong','5 — Mastered','6 — Expert'];
+  const levelLabels=['New','Learning','Reviewing','Familiar','Strong','Mastered','Expert'];
   const counts=[0,1,2,3,4,5,6].map(l=>items.filter(i=>(i.level||0)===l).length);
+  const maxCount=Math.max(...counts,1);
   const retained=counts.slice(3).reduce((a,b)=>a+b,0);
   const retPct=total>0?Math.round(retained/total*100):0;
   const retColor=retPct>=70?'var(--green)':retPct>=40?'var(--yellow)':'var(--red)';
-  const maxCount=Math.max(...counts,1);
-  const bars=[0,1,2,3,4,5,6].map(l=>`
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-      <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);width:90px;flex-shrink:0;">${levelLabels[l]}</div>
-      <div class="level-bar-wrap">
-        <div class="level-bar-fill" style="background:${levelColors[l]};width:${Math.round(counts[l]/maxCount*100)}%;"></div>
-      </div>
-      <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);width:28px;text-align:right;flex-shrink:0;">${counts[l]}</div>
+  const levelBars=[0,1,2,3,4,5,6].map(l=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
+      <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);width:76px;flex-shrink:0;">Lv${l} ${levelLabels[l]}</div>
+      <div class="level-bar-wrap"><div class="level-bar-fill" style="background:${levelColors[l]};width:${Math.round(counts[l]/maxCount*100)}%;"></div></div>
+      <div style="font-size:10px;font-family:var(--font-mono);width:22px;text-align:right;flex-shrink:0;color:${counts[l]>0?'var(--text2)':'var(--text3)'};">${counts[l]}</div>
     </div>`).join('');
-  const tagCounts=items.reduce((acc,i)=>{acc[i.tag||'Other']=(acc[i.tag||'Other']||0)+1;return acc;},{});
-  const tagRows=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).map(([tag,n])=>`
-    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
-      <span style="font-family:var(--font-mono);color:var(--text2);">${tag}</span>
-      <span style="font-family:var(--font-mono);color:var(--text3);">${n}</span>
-    </div>`).join('');
+
   el.innerHTML=`
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total Cards</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--red);">${due}</div><div class="stat-label">Due Today</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:${retColor};">${retPct}%</div><div class="stat-label">Retained</div></div>
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--red);">${due}</div><div class="stat-label">Due today</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--green);">${doneToday}</div><div class="stat-label">Done today</div></div>
     </div>
+
+    <div class="card">
+      <div class="card-title">Streak</div>
+      <div style="display:flex;margin-bottom:14px;">
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:22px;">🔥</div>
+          <div style="font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--accent);line-height:1.1;">${streak}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">current</div>
+        </div>
+        <div style="width:1px;background:var(--border);margin:4px 0;"></div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:22px;">🏆</div>
+          <div style="font-family:var(--font-mono);font-size:28px;font-weight:500;color:var(--yellow);line-height:1.1;">${bestStreak}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">best</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:6px;">Last 30 days</div>
+      <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:3px;">${dotGrid}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Review activity — last 7 days</div>
+      <div style="display:flex;gap:4px;height:80px;align-items:flex-end;">${barCols}</div>
+    </div>
+
     <div class="card">
       <div class="card-title">SRS Level Distribution</div>
-      ${total===0?'<div class="empty-state">No cards yet — add some to get started!</div>':bars}
-      ${total>0?`<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.7;">
-        Level 0–2 = still learning &nbsp;·&nbsp; Level 3+ = retained &nbsp;·&nbsp; Level 6 = expert
+      ${total===0?'<div class="empty-state" style="padding:16px 0;">Add cards and start reviewing to see your progress</div>':levelBars}
+      ${total>0?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);line-height:1.8;">
+        Lv 0–2 = still learning &nbsp;·&nbsp; Lv 3+ = retained &nbsp;·&nbsp; Lv 6 = expert
       </div>`:''}
     </div>
+
     <div class="card">
-      <div class="card-title">Retention Rate</div>
-      <div style="text-align:center;padding:12px 0 8px;">
-        <div style="font-family:var(--font-mono);font-size:42px;font-weight:500;color:${retColor};">${retPct}%</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:6px;">${retained} of ${total} cards at level 3+</div>
-        <div style="margin-top:16px;background:var(--surface2);border-radius:var(--r);height:12px;overflow:hidden;">
-          <div style="background:${retColor};height:100%;width:${retPct}%;border-radius:var(--r);transition:width 0.5s ease;"></div>
+      <div class="card-title">Retention rate</div>
+      <div style="text-align:center;padding:10px 0 6px;">
+        <div style="font-family:var(--font-mono);font-size:44px;font-weight:500;color:${retColor};line-height:1;">${retPct}%</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:8px;">${retained} of ${total} cards at level 3+</div>
+        <div style="margin-top:12px;background:var(--surface2);border-radius:var(--r);height:10px;overflow:hidden;">
+          <div style="background:${retColor};height:100%;width:${retPct}%;border-radius:var(--r);transition:width 0.6s ease;"></div>
         </div>
       </div>
     </div>
-    <div class="card" style="display:flex;gap:0;flex-direction:row;">
-      <div style="flex:1;text-align:center;padding:12px 0;">
-        <div style="font-size:28px;">🔥</div>
-        <div style="font-family:var(--font-mono);font-size:26px;font-weight:500;color:var(--accent);margin-top:4px;">${streak}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;">day streak</div>
+
+    <div class="card" style="flex-direction:row;display:flex;">
+      <div style="flex:1;text-align:center;padding:10px 0;">
+        <div style="font-size:22px;">📝</div>
+        <div style="font-family:var(--font-mono);font-size:22px;font-weight:500;color:var(--blue);margin-top:4px;">${items.filter(i=>i.type==='expr').length}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">expressions</div>
       </div>
-      <div style="width:1px;background:var(--border);margin:12px 0;"></div>
-      <div style="flex:1;text-align:center;padding:12px 0;">
-        <div style="font-size:28px;">📝</div>
-        <div style="font-family:var(--font-mono);font-size:26px;font-weight:500;color:var(--blue);margin-top:4px;">${items.filter(i=>i.type==='expr').length}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;">expressions</div>
+      <div style="width:1px;background:var(--border);margin:10px 0;"></div>
+      <div style="flex:1;text-align:center;padding:10px 0;">
+        <div style="font-size:22px;">💬</div>
+        <div style="font-family:var(--font-mono);font-size:22px;font-weight:500;color:var(--purple);margin-top:4px;">${items.filter(i=>i.type==='sent').length}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">sentences</div>
       </div>
-      <div style="width:1px;background:var(--border);margin:12px 0;"></div>
-      <div style="flex:1;text-align:center;padding:12px 0;">
-        <div style="font-size:28px;">💬</div>
-        <div style="font-family:var(--font-mono);font-size:26px;font-weight:500;color:var(--purple);margin-top:4px;">${items.filter(i=>i.type==='sent').length}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;">sentences</div>
-      </div>
-    </div>
-    ${Object.keys(tagCounts).length>0?`<div class="card">
-      <div class="card-title">Cards by Tag</div>
-      ${tagRows}
-    </div>`:''}`;
+    </div>`;
 }
 
 // ── SW ────────────────────────────────────────────
