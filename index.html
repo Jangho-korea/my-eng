@@ -983,8 +983,31 @@ async function importCsvData(btn){
 
 // ── REVIEW ────────────────────────────────────────
 let rQueue=[],rCurrent=null,rDone=0,reviewMode='all',reviewType='ko-en',reviewTag='all';
+let savedReview=null;
 
 function renderReview(){
+  const area=document.getElementById('review-area');
+  if(savedReview&&(savedReview.queueIds.length>0||savedReview.currentId)){
+    const remaining=savedReview.queueIds.length+(savedReview.currentId?1:0);
+    const modeLabel={' ko-en':'KO→EN','blank':'Fill in blank','ko-example':'KO→Example','focus':'Focus'}[savedReview.type]||savedReview.type;
+    area.innerHTML=`
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">Resume previous session?</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px;">
+          <strong>${remaining}</strong> cards left &nbsp;·&nbsp; ${savedReview.done} already done<br>
+          <span style="font-size:11px;color:var(--text3);">Mode: ${modeLabel}${savedReview.tag!=='all'?' · Tag: '+savedReview.tag:''}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="action-btn" style="width:100%;padding:13px;font-size:14px;" onclick="resumeReview()">↩ Continue where I left off</button>
+          <button class="ghost-btn" style="width:100%;padding:12px;font-size:13px;" onclick="savedReview=null;renderReview()">🔄 Start from the beginning</button>
+        </div>
+      </div>`;
+    return;
+  }
+  showReviewSetup();
+}
+
+function showReviewSetup(){
   const area=document.getElementById('review-area');
   reviewTag='all';
   const allTags=[...new Set(items.map(i=>i.tag).filter(Boolean))].sort();
@@ -1005,6 +1028,15 @@ function renderReview(){
         <button class="mode-btn" onclick="reviewType='focus';startReviewCards()" style="border-color:var(--yellow);background:#fffbeb;">💪 Focus<br><span style="font-size:11px;color:var(--yellow);">Weak cards (lv 0-1)</span></button>
       </div>
     </div>`;
+}
+
+function resumeReview(){
+  if(!savedReview) return;
+  reviewMode=savedReview.mode; reviewType=savedReview.type; reviewTag=savedReview.tag; rDone=savedReview.done;
+  rQueue=savedReview.queueIds.map(id=>items.find(i=>i.id===id)).filter(Boolean);
+  if(savedReview.currentId){const c=items.find(i=>i.id===savedReview.currentId);if(c) rQueue.unshift(c);}
+  savedReview=null;
+  nextCard();
 }
 
 function startReviewCards(){
@@ -1028,12 +1060,14 @@ function nextCard(){
   const area=document.getElementById('review-area');
   if(!rQueue.length){
     if(rDone>0) updateStreak();
+    savedReview=null;
     area.innerHTML=rDone===0
       ?`<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">All done for today!</div><div class="done-sub">You've reviewed all cards<br>See you tomorrow!</div></div>`
       :`<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone} cards reviewed!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak} day streak</div></div>`;
     updateHome();return;
   }
   rCurrent=rQueue.shift();
+  savedReview={queueIds:rQueue.map(i=>i.id),currentId:rCurrent.id,done:rDone,mode:reviewMode,type:reviewType,tag:reviewTag};
   const total=rDone+rQueue.length+1;
   const pct=Math.round((rDone/total)*100);
   const progressHtml=`<div style="margin-bottom:10px;">
