@@ -191,14 +191,14 @@
 <!-- AUTH -->
 <div id="auth-screen" style="display:none;">
   <div class="auth-logo">MY·ENG</div>
-  <div class="auth-desc">나만의 영어 공부 앱<br>이메일로 로그인하면 모든 기기에서 동기화돼</div>
+  <div class="auth-desc">My English Study App<br>Sign in to sync across all your devices</div>
   <div class="auth-card">
-    <div style="font-size:13px;color:var(--text2);">이메일로 시작하기</div>
-    <input class="auth-input" type="email" id="auth-email" placeholder="이메일 주소" />
-    <input class="auth-input" type="password" id="auth-password" placeholder="비밀번호 (6자 이상)" />
-    <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">로그인 / 회원가입</button>
+    <div style="font-size:13px;color:var(--text2);">Get started with email</div>
+    <input class="auth-input" type="email" id="auth-email" placeholder="Email address" />
+    <input class="auth-input" type="password" id="auth-password" placeholder="Password (min. 6 characters)" />
+    <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">Sign In / Sign Up</button>
     <div class="auth-msg" id="auth-msg"></div>
-    <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6;">처음이면 자동으로 계정이 만들어져</div>
+    <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6;">New users will be registered automatically</div>
   </div>
 </div>
 
@@ -208,36 +208,36 @@
     <div class="logo">MY·ENG</div>
     <div style="display:flex;align-items:center;gap:8px;">
       <span class="sync-indicator" id="sync-indicator"></span>
-      <div class="streak-badge" id="streak-display">🔥 0일 연속</div>
-      <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+      <div class="streak-badge" id="streak-display">🔥 0 day streak</div>
+      <button class="logout-btn" onclick="handleLogout()">Log out</button>
     </div>
   </div>
   <div class="nav">
-    <button class="nav-btn active" onclick="showPage('home')">홈</button>
-    <button class="nav-btn" onclick="showPage('translate')">번역</button>
-    <button class="nav-btn" onclick="showPage('add')">추가</button>
-    <button class="nav-btn" onclick="showPage('review')">복습</button>
-    <button class="nav-btn" onclick="showPage('words')">단어장</button>
-    <button class="nav-btn" onclick="showPage('decks')">덱</button>
+    <button class="nav-btn active" onclick="showPage('home')">Home</button>
+    <button class="nav-btn" onclick="showPage('translate')">Translate</button>
+    <button class="nav-btn" onclick="showPage('add')">Add</button>
+    <button class="nav-btn" onclick="showPage('review')">Review</button>
+    <button class="nav-btn" onclick="showPage('words')">Words</button>
+    <button class="nav-btn" onclick="showPage('decks')">Decks</button>
   </div>
 
   <!-- HOME -->
   <div class="page active" id="page-home">
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-num" id="stat-expr">0</div><div class="stat-label">표현</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-sent">0</div><div class="stat-label">문장</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-due">0</div><div class="stat-label">복습 예정</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-expr">0</div><div class="stat-label">Expressions</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-sent">0</div><div class="stat-label">Sentences</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-due">0</div><div class="stat-label">Due</div></div>
     </div>
     <div class="due-banner">
       <div>
         <div class="due-count" id="due-count">0</div>
-        <div class="due-label">오늘 복습할 카드</div>
+        <div class="due-label">Cards due today</div>
       </div>
-      <button class="start-btn" onclick="showPage('review')">시작하기 →</button>
+      <button class="start-btn" onclick="showPage('review')">Start →</button>
     </div>
     <div class="card">
-      <div class="card-title">최근 추가</div>
-      <div id="recent-list"><div class="empty-state">아직 저장된 항목이 없어요</div></div>
+      <div class="card-title">Recently Added</div>
+      <div id="recent-list"><div class="empty-state">No items saved yet</div></div>
     </div>
   </div>
 
@@ -246,16 +246,16 @@
     <div id="api-key-section"></div>
     <div id="translate-form" style="display:none;flex-direction:column;gap:12px;">
       <div class="card">
-        <div class="card-title">한국어 → 영어 번역</div>
-        <textarea class="trans-textarea" id="ko-input" rows="4" placeholder="영어로 말하고 싶은 한국어 문장을 입력해봐&#10;예: 그 회의는 다음 주로 미뤄졌어"></textarea>
+        <div class="card-title">Korean → English</div>
+        <textarea class="trans-textarea" id="ko-input" rows="4" placeholder="Enter a Korean sentence you want to say in English&#10;e.g. 그 회의는 다음 주로 미뤄졌어"></textarea>
         <div style="margin-top:10px;">
-          <button class="translate-btn" id="trans-btn" onclick="doTranslate()">번역하기</button>
+          <button class="translate-btn" id="trans-btn" onclick="doTranslate()">Translate</button>
         </div>
       </div>
       <div id="trans-loading" style="display:none;">
         <div class="card" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px;">
           <div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-          <div style="font-size:12px;color:var(--text3);">번역 중...</div>
+          <div style="font-size:12px;color:var(--text3);">Translating...</div>
         </div>
       </div>
       <div id="trans-result" style="display:none;"></div>
@@ -267,101 +267,101 @@
     <!-- 표현 추가 -->
     <div class="add-section">
       <div class="section-header">
-        <span class="type-pill type-expr">표현</span>
-        <span style="font-size:13px;color:var(--text2);">단어 / 표현 추가</span>
+        <span class="type-pill type-expr">Expr</span>
+        <span style="font-size:13px;color:var(--text2);">Add expression / word</span>
       </div>
       <div class="input-group">
-        <div class="input-label">영어 표현 *</div>
-        <input type="text" id="add-expr-en" placeholder="예: get the ball rolling" />
+        <div class="input-label">English expression *</div>
+        <input type="text" id="add-expr-en" placeholder="e.g. get the ball rolling" />
       </div>
       <div class="input-group">
-        <div class="input-label">한국어 의미 *</div>
-        <input type="text" id="add-expr-ko" placeholder="예: 일을 시작하다, 추진하다" />
+        <div class="input-label">Korean meaning *</div>
+        <input type="text" id="add-expr-ko" placeholder="e.g. 일을 시작하다, 추진하다" />
       </div>
       <div class="input-group">
-        <div class="input-label">예시 문장 *</div>
-        <input type="text" id="add-expr-example" placeholder="예: Let's get the ball rolling on this project." />
+        <div class="input-label">Example sentence *</div>
+        <input type="text" id="add-expr-example" placeholder="e.g. Let's get the ball rolling on this project." />
       </div>
       <div class="input-group">
-        <div class="input-label">예시 문장 한국어 번역 (선택사항)</div>
+        <div class="input-label">Korean translation of example (optional)</div>
         <div style="display:flex;gap:8px;">
-          <input type="text" id="add-expr-example-ko" placeholder="예: 이 프로젝트를 시작해보자." style="flex:1;" />
+          <input type="text" id="add-expr-example-ko" placeholder="e.g. 이 프로젝트를 시작해보자." style="flex:1;" />
           <button type="button" onclick="autoTranslateExample(this)"
             style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 12px;font-size:12px;cursor:pointer;font-family:var(--font-body);white-space:nowrap;font-weight:700;">
-            ✨ 자동번역
+            ✨ Auto-translate
           </button>
         </div>
       </div>
       <div class="input-group">
-        <div class="input-label">덱 선택 (선택사항)</div>
+        <div class="input-label">Select deck (optional)</div>
         <select id="add-expr-deck" onchange="updateSetSelect('expr')">
-          <option value="">-- 덱 없이 추가 --</option>
+          <option value="">-- No deck --</option>
         </select>
       </div>
       <div class="input-group" id="add-expr-set-group" style="display:none;">
-        <div class="input-label">세트 선택</div>
+        <div class="input-label">Select set</div>
         <select id="add-expr-set">
-          <option value="">-- 세트 없이 추가 --</option>
+          <option value="">-- No set --</option>
         </select>
       </div>
       <div class="tag-row" style="margin-bottom:12px;">
-        <span class="tag active" onclick="toggleTag(this,'expr')" data-tag="업무">업무</span>
-        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="일상">일상</span>
-        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="이디엄">이디엄</span>
-        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="비즈니스">비즈니스</span>
-        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="구동사">구동사</span>
+        <span class="tag active" onclick="toggleTag(this,'expr')" data-tag="Work">Work</span>
+        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="Daily">Daily</span>
+        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="Idiom">Idiom</span>
+        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="Business">Business</span>
+        <span class="tag" onclick="toggleTag(this,'expr')" data-tag="Phrasal verb">Phrasal verb</span>
       </div>
-      <button class="add-submit-btn" onclick="addExpression()">+ 표현 추가하기</button>
+      <button class="add-submit-btn" onclick="addExpression()">+ Add expression</button>
     </div>
 
     <!-- 문장 추가 -->
     <div class="add-section">
       <div class="section-header">
-        <span class="type-pill type-sent">문장</span>
-        <span style="font-size:13px;color:var(--text2);">통째로 외울 문장 추가</span>
+        <span class="type-pill type-sent">Sent</span>
+        <span style="font-size:13px;color:var(--text2);">Add full sentence to memorize</span>
       </div>
       <div class="input-group">
-        <div class="input-label">영어 문장 *</div>
-        <textarea id="add-sent-en" rows="2" placeholder="예: I'll keep you posted on any updates."></textarea>
+        <div class="input-label">English sentence *</div>
+        <textarea id="add-sent-en" rows="2" placeholder="e.g. I'll keep you posted on any updates."></textarea>
       </div>
       <div class="input-group">
-        <div class="input-label">한국어 의미 *</div>
-        <input type="text" id="add-sent-ko" placeholder="예: 새로운 소식이 있으면 계속 알려줄게" />
+        <div class="input-label">Korean meaning *</div>
+        <input type="text" id="add-sent-ko" placeholder="e.g. 새로운 소식이 있으면 계속 알려줄게" />
       </div>
       <div class="input-group">
-        <div class="input-label">덱 선택 (선택사항)</div>
+        <div class="input-label">Select deck (optional)</div>
         <select id="add-sent-deck" onchange="updateSetSelect('sent')">
-          <option value="">-- 덱 없이 추가 --</option>
+          <option value="">-- No deck --</option>
         </select>
       </div>
       <div class="input-group" id="add-sent-set-group" style="display:none;">
-        <div class="input-label">세트 선택</div>
+        <div class="input-label">Select set</div>
         <select id="add-sent-set">
-          <option value="">-- 세트 없이 추가 --</option>
+          <option value="">-- No set --</option>
         </select>
       </div>
       <div class="tag-row" style="margin-bottom:12px;">
-        <span class="tag active" onclick="toggleTag(this,'sent')" data-tag="업무">업무</span>
-        <span class="tag" onclick="toggleTag(this,'sent')" data-tag="일상">일상</span>
-        <span class="tag" onclick="toggleTag(this,'sent')" data-tag="비즈니스">비즈니스</span>
-        <span class="tag" onclick="toggleTag(this,'sent')" data-tag="기타">기타</span>
+        <span class="tag active" onclick="toggleTag(this,'sent')" data-tag="Work">Work</span>
+        <span class="tag" onclick="toggleTag(this,'sent')" data-tag="Daily">Daily</span>
+        <span class="tag" onclick="toggleTag(this,'sent')" data-tag="Business">Business</span>
+        <span class="tag" onclick="toggleTag(this,'sent')" data-tag="Other">Other</span>
       </div>
-      <button class="add-submit-btn" onclick="addSentence()">+ 문장 추가하기</button>
+      <button class="add-submit-btn" onclick="addSentence()">+ Add sentence</button>
     </div>
 
     <!-- CSV 업로드 -->
     <div class="add-section">
       <div class="section-header">
         <span style="font-size:16px;">📂</span>
-        <span style="font-size:13px;color:var(--text2);">CSV 파일로 대량 추가</span>
+        <span style="font-size:13px;color:var(--text2);">Bulk import via file</span>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--text3);line-height:1.9;font-family:var(--font-mono);">
         deck, set, type, en, ko, example, tag, example_ko<br>
-        비즈니스, 이메일, expr, keep you posted, 계속 알려주다, I'll keep you posted., 업무, 계속 알려줄게<br>
-        비즈니스, 회의, sent, Let's wrap up., 마무리하자, , 업무,
+        Business, Email, expr, keep you posted, 계속 알려주다, I'll keep you posted on updates., Work, 계속 알려줄게.<br>
+        Business, Meeting, sent, Let's wrap up., 마무리하자, , Work,
       </div>
       <button onclick="downloadCsvTemplate()" style="width:100%;background:none;border:1px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:10px;font-size:13px;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;">
-        📥 양식 파일 다운로드 (.csv)
+        📥 Download template (.csv)
       </button>
       <div id="csv-drop-zone" onclick="document.getElementById('csv-file-input').click()"
         style="border:2px dashed var(--border2);border-radius:var(--r);padding:24px;text-align:center;cursor:pointer;transition:all 0.15s;"
@@ -369,8 +369,8 @@
         ondragleave="this.style.borderColor='var(--border2)';this.style.background='none'"
         ondrop="handleCsvDrop(event)">
         <div style="font-size:24px;margin-bottom:8px;">📄</div>
-        <div style="font-size:13px;color:var(--text2);">파일을 드래그하거나 클릭해서 선택</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">.csv 또는 .xlsx 지원</div>
+        <div style="font-size:13px;color:var(--text2);">Drag & drop or click to select</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">.csv and .xlsx supported</div>
       </div>
       <input type="file" id="csv-file-input" accept=".csv,.xlsx" style="display:none;" onchange="handleCsvFile(this)" />
       <div id="csv-preview" style="display:none;margin-top:12px;"></div>
@@ -385,9 +385,9 @@
   <!-- WORDS -->
   <div class="page" id="page-words">
     <div class="sub-tabs">
-      <button class="sub-tab active" onclick="switchWordTab(this,'all')">전체</button>
-      <button class="sub-tab" onclick="switchWordTab(this,'expr')">표현</button>
-      <button class="sub-tab" onclick="switchWordTab(this,'sent')">문장</button>
+      <button class="sub-tab active" onclick="switchWordTab(this,'all')">All</button>
+      <button class="sub-tab" onclick="switchWordTab(this,'expr')">Expressions</button>
+      <button class="sub-tab" onclick="switchWordTab(this,'sent')">Sentences</button>
     </div>
     <div class="card" style="padding-top:12px;">
       <div id="words-list"></div>
@@ -424,8 +424,8 @@ function srsNext(lvl) {
 function dueItems() { const t=today(); return items.filter(w=>!w.next_review||w.next_review<=t); }
 function setSyncStatus(s) {
   const el=document.getElementById('sync-indicator'); if(!el) return;
-  if(s==='syncing'){el.textContent='동기화 중...';el.className='sync-indicator syncing';}
-  else if(s==='synced'){el.textContent='✓ 동기화됨';el.className='sync-indicator synced';setTimeout(()=>{el.textContent='';},2000);}
+  if(s==='syncing'){el.textContent='Syncing...';el.className='sync-indicator syncing';}
+  else if(s==='synced'){el.textContent='✓ Synced';el.className='sync-indicator synced';setTimeout(()=>{el.textContent='';},2000);}
   else{el.textContent='';el.className='sync-indicator';}
 }
 function esc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');}
@@ -445,16 +445,16 @@ async function handleAuth() {
   const password=document.getElementById('auth-password').value.trim();
   const msg=document.getElementById('auth-msg');
   const btn=document.getElementById('auth-submit-btn');
-  if(!email||!password){msg.textContent='이메일과 비밀번호를 입력해줘';msg.className='auth-msg error';return;}
-  btn.disabled=true; msg.textContent='처리 중...'; msg.className='auth-msg';
+  if(!email||!password){msg.textContent='Please enter email and password.';msg.className='auth-msg error';return;}
+  btn.disabled=true; msg.textContent='Processing...'; msg.className='auth-msg';
   // 로그인 시도
   const {error}=await sb.auth.signInWithPassword({email,password});
   if(!error){btn.disabled=false;return;} // 성공 시 onAuthStateChange가 처리
   // 로그인 실패 시 오류 메시지
   if(error.message.includes('Invalid login credentials')){
-    msg.textContent='이메일 또는 비밀번호가 틀렸어';msg.className='auth-msg error';
+    msg.textContent='Incorrect email or password.';msg.className='auth-msg error';
   } else if(error.message.includes('Email not confirmed')){
-    msg.textContent='이메일 인증이 필요해. 받은 메일함을 확인해줘';msg.className='auth-msg error';
+    msg.textContent='Email verification required. Check your inbox.';msg.className='auth-msg error';
   } else {
     msg.textContent=error.message;msg.className='auth-msg error';
   }
@@ -500,7 +500,7 @@ async function insertItem(data){
   setSyncStatus('syncing');
   const {data:row,error}=await sb.from('items').insert({
     user_id:currentUser.id,type:data.type,en:data.en,ko:data.ko,
-    example:data.example||'',example_ko:data.example_ko||'',tag:data.tag||'기타',level:0,next_review:today(),added_at:today()
+    example:data.example||'',example_ko:data.example_ko||'',tag:data.tag||'Other',level:0,next_review:today(),added_at:today()
   }).select().single();
   if(!error&&row){items.unshift(row);setSyncStatus('synced');return row;}
   setSyncStatus(''); return null;
@@ -523,9 +523,11 @@ async function createDeck(name){
   if(!error&&data){decks.push(data);return data;} return null;
 }
 async function deleteDeck(id){
+  const deckSetIds=sets.filter(s=>s.deck_id===id).map(s=>s.id);
   await sb.from('decks').delete().eq('id',id).eq('user_id',currentUser.id);
   decks=decks.filter(d=>d.id!==id);
   sets=sets.filter(s=>s.deck_id!==id);
+  itemSets=itemSets.filter(s=>!deckSetIds.includes(s.set_id));
 }
 // Set CRUD
 async function createSet(deckId,name){
@@ -585,32 +587,32 @@ function updateHome(){
   const due=dueItems().length;
   document.getElementById('stat-due').textContent=due;
   document.getElementById('due-count').textContent=due;
-  document.getElementById('streak-display').textContent='🔥 '+streak+'일 연속';
+  document.getElementById('streak-display').textContent='🔥 '+streak+' day streak';
   const el=document.getElementById('recent-list');
-  if(!items.length){el.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요<br>번역하거나 직접 추가해보세요!</div>';return;}
+  if(!items.length){el.innerHTML='<div class="empty-state">No items yet<br>Translate something or add one manually!</div>';return;}
   el.innerHTML=items.slice(0,5).map(renderItemRow).join('');
 }
 function renderItemRow(w, showEdit=false){
   if(showEdit && editingId===w.id){
     return `<div class="item-row" style="flex-direction:column;align-items:stretch;gap:8px;padding:14px 0;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">편집 중</span>
-        <button onclick="cancelEdit()" class="ghost-btn" style="font-size:11px;">취소</button>
+        <span style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">Editing</span>
+        <button onclick="cancelEdit()" class="ghost-btn" style="font-size:11px;">Cancel</button>
       </div>
-      <input type="text" id="edit-en-${w.id}" value="${escHtml(w.en)}" placeholder="영어 표현" />
-      <input type="text" id="edit-ko-${w.id}" value="${escHtml(w.ko)}" placeholder="한국어 의미" />
-      <input type="text" id="edit-example-${w.id}" value="${escHtml(w.example||'')}" placeholder="예시 문장" />
+      <input type="text" id="edit-en-${w.id}" value="${escHtml(w.en)}" placeholder="English expression" />
+      <input type="text" id="edit-ko-${w.id}" value="${escHtml(w.ko)}" placeholder="Korean meaning" />
+      <input type="text" id="edit-example-${w.id}" value="${escHtml(w.example||'')}" placeholder="Example sentence" />
       <div style="display:flex;gap:8px;">
-        <input type="text" id="edit-example-ko-${w.id}" value="${escHtml(w.example_ko||'')}" placeholder="예시 번역 (한국어)" style="flex:1;" />
-        <button type="button" onclick="editAutoTranslate(${w.id},this)" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 12px;font-size:12px;cursor:pointer;font-family:var(--font-body);white-space:nowrap;font-weight:700;">✨ 자동번역</button>
+        <input type="text" id="edit-example-ko-${w.id}" value="${escHtml(w.example_ko||'')}" placeholder="Korean translation of example" style="flex:1;" />
+        <button type="button" onclick="editAutoTranslate(${w.id},this)" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 12px;font-size:12px;cursor:pointer;font-family:var(--font-body);white-space:nowrap;font-weight:700;">✨ Auto-translate</button>
       </div>
-      <button onclick="saveEdit(${w.id})" class="action-btn" style="width:100%;padding:11px;font-size:13px;">저장</button>
+      <button onclick="saveEdit(${w.id})" class="action-btn" style="width:100%;padding:11px;font-size:13px;">Save</button>
     </div>`;
   }
   const lvl=w.level||0;
   const cls=lvl===0?'level-new':lvl<4?'level-learning':'level-known';
   const lbl=lvl===0?'NEW':lvl<4?'Lv.'+lvl:'✓';
-  const typePill=w.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>';
+  const typePill=w.type==='expr'?'<span class="type-pill type-expr">Expr</span>':'<span class="type-pill type-sent">Sent</span>';
   return `<div class="item-row">
     <div style="flex:1;min-width:0;">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">${typePill}<span class="level-pill ${cls}">${lbl}</span></div>
@@ -618,7 +620,7 @@ function renderItemRow(w, showEdit=false){
       ${w.example?`<div class="item-example">"${w.example}"</div>`:''}
     </div>
     <div style="display:flex;gap:4px;flex-shrink:0;">
-      ${showEdit?`<button class="ghost-btn" style="font-size:11px;padding:4px 8px;" onclick="editItem(${w.id})">편집</button>`:''}
+      ${showEdit?`<button class="ghost-btn" style="font-size:11px;padding:4px 8px;" onclick="editItem(${w.id})">Edit</button>`:''}
       <button class="delete-btn" onclick="deleteItem(${w.id})">✕</button>
     </div>
   </div>`;
@@ -630,23 +632,23 @@ function renderApiSection(){
   const form=document.getElementById('translate-form');
   if(!sec||!form) return;
   if(apiKey){
-    const label=apiProvider==='openai'?'✓ OpenAI GPT 연결됨':'✓ Anthropic Claude 연결됨';
-    sec.innerHTML=`<div class="api-connected"><span class="api-connected-label">${label}</span><button class="api-reset-btn" onclick="resetApiKey()">키 변경</button></div>`;
+    const label=apiProvider==='openai'?'✓ OpenAI GPT connected':'✓ Anthropic Claude connected';
+    sec.innerHTML=`<div class="api-connected"><span class="api-connected-label">${label}</span><button class="api-reset-btn" onclick="resetApiKey()">Change key</button></div>`;
     form.style.display='flex';
   } else {
     sec.innerHTML=`<div class="api-banner">
-      <div class="api-banner-title">🔑 번역 API 키 설정</div>
-      <div class="api-banner-desc">둘 중 하나를 선택해서 입력해줘. 키는 이 기기에만 저장돼.</div>
+      <div class="api-banner-title">🔑 Translation API Key</div>
+      <div class="api-banner-desc">Choose one and enter your key. It's stored only on this device.</div>
       <div style="display:flex;gap:8px;margin-bottom:10px;">
         <button onclick="selectProvider('openai',this)" id="btn-openai" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--accent);background:var(--accent-light);color:var(--accent);font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:700;">GPT (OpenAI)</button>
         <button onclick="selectProvider('anthropic',this)" id="btn-anthropic" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);">Claude (Anthropic)</button>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:8px;" id="api-link-desc">
-        <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);">platform.openai.com</a>에서 발급 → API keys
+        <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);">platform.openai.com</a> → API keys
       </div>
       <div class="api-key-row">
         <input type="password" id="api-key-input" placeholder="sk-..." />
-        <button class="api-save-btn" onclick="submitApiKey()">저장</button>
+        <button class="api-save-btn" onclick="submitApiKey()">Save</button>
       </div>
     </div>`;
     form.style.display='none';
@@ -658,18 +660,18 @@ function selectProvider(provider,el){
   document.getElementById('btn-anthropic').style.cssText='flex:1;padding:8px;border-radius:8px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-body);';
   el.style.cssText='flex:1;padding:8px;border-radius:8px;border:2px solid var(--accent);background:var(--accent-light);color:var(--accent);font-size:12px;cursor:pointer;font-family:var(--font-body);font-weight:700;';
   const desc=document.getElementById('api-link-desc');
-  if(provider==='openai'){desc.innerHTML='<a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);">platform.openai.com</a>에서 발급 → API keys';document.getElementById('api-key-input').placeholder='sk-...';}
-  else{desc.innerHTML='<a href="https://console.anthropic.com" target="_blank" style="color:var(--blue);">console.anthropic.com</a>에서 발급 → API keys';document.getElementById('api-key-input').placeholder='sk-ant-...';}
+  if(provider==='openai'){desc.innerHTML='<a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);">platform.openai.com</a> → API keys';document.getElementById('api-key-input').placeholder='sk-...';}
+  else{desc.innerHTML='<a href="https://console.anthropic.com" target="_blank" style="color:var(--blue);">console.anthropic.com</a> → API keys';document.getElementById('api-key-input').placeholder='sk-ant-...';}
 }
 function submitApiKey(){
   const val=document.getElementById('api-key-input').value.trim();
-  if(!val.startsWith('sk-')){alert('올바른 API 키 형식이 아니야.');return;}
+  if(!val.startsWith('sk-')){alert('Invalid API key format.');return;}
   apiKey=val;apiProvider=selectedProvider;
   localStorage.setItem(API_KEY_SK,val);localStorage.setItem(API_PROVIDER_SK,selectedProvider);
   renderApiSection();
 }
 function resetApiKey(){
-  if(!confirm('API 키를 삭제할까?')) return;
+  if(!confirm('Delete API key?')) return;
   apiKey='';apiProvider='openai';
   localStorage.removeItem(API_KEY_SK);localStorage.removeItem(API_PROVIDER_SK);
   renderApiSection();
@@ -699,36 +701,36 @@ async function doTranslate(){
     document.getElementById('trans-result').style.display='block';
     document.getElementById('trans-result').innerHTML=`
       <div class="result-box">
-        <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:8px;">번역 결과</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:8px;">Translation</div>
         <div class="result-en-text">${r.translation}</div>
         <hr class="divider">
         <div class="save-row" style="margin-bottom:10px;">
-          <div style="font-size:11px;color:var(--text2);">전체 문장 저장</div>
-          <button class="save-expr-btn" onclick="saveSentFromTrans('${esc(r.translation)}','${esc(text)}',this)">+ 문장 저장</button>
+          <div style="font-size:11px;color:var(--text2);">Save full sentence</div>
+          <button class="save-expr-btn" onclick="saveSentFromTrans('${esc(r.translation)}','${esc(text)}',this)">+ Save sentence</button>
         </div>
         <hr class="divider">
-        <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:6px;">핵심 표현</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:6px;">Key expression</div>
         <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">${r.pattern}</div>
         <div style="font-family:var(--font-mono);font-size:15px;color:var(--blue);margin-bottom:2px;">${r.key_phrase}</div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:4px;">${r.key_phrase_ko}</div>
         <div style="font-size:11px;color:var(--text3);font-style:italic;margin-bottom:10px;">"${r.key_example}"</div>
-        <div class="save-row"><div></div><button class="save-expr-btn" onclick="saveExprFromTrans('${esc(r.key_phrase)}','${esc(r.key_phrase_ko)}','${esc(r.key_example)}',this)">+ 표현 저장</button></div>
+        <div class="save-row"><div></div><button class="save-expr-btn" onclick="saveExprFromTrans('${esc(r.key_phrase)}','${esc(r.key_phrase_ko)}','${esc(r.key_example)}',this)">+ Save expression</button></div>
       </div>`;
   } catch(e){
     document.getElementById('trans-loading').style.display='none';
     document.getElementById('trans-result').style.display='block';
-    document.getElementById('trans-result').innerHTML=`<div class="result-box"><div class="result-en-text" style="color:var(--red);">오류: ${e.message}</div></div>`;
+    document.getElementById('trans-result').innerHTML=`<div class="result-box"><div class="result-en-text" style="color:var(--red);">Error: ${e.message}</div></div>`;
   }
   btn.disabled=false;
 }
-async function saveExprFromTrans(en,ko,example,btn){await addItemData({type:'expr',en,ko,example,tag:'번역'});btn.textContent='✓ 저장됨';btn.classList.add('saved');}
-async function saveSentFromTrans(en,ko,btn){await addItemData({type:'sent',en,ko,example:'',tag:'번역'});btn.textContent='✓ 저장됨';btn.classList.add('saved');}
+async function saveExprFromTrans(en,ko,example,btn){await addItemData({type:'expr',en,ko,example,tag:'Translated'});btn.textContent='✓ Saved';btn.classList.add('saved');}
+async function saveSentFromTrans(en,ko,btn){await addItemData({type:'sent',en,ko,example:'',tag:'Translated'});btn.textContent='✓ Saved';btn.classList.add('saved');}
 
 async function autoTranslateExample(btn){
   const exText=document.getElementById('add-expr-example').value.trim();
-  if(!exText){alert('먼저 예시 문장을 입력해줘');return;}
-  if(!apiKey){alert('번역 API 키가 필요해. 번역 탭에서 먼저 설정해줘');return;}
-  btn.disabled=true;btn.textContent='번역 중...';
+  if(!exText){alert('Please enter an example sentence first');return;}
+  if(!apiKey){alert('API key required. Set it in the Translate tab first.');return;}
+  btn.disabled=true;btn.textContent='Translating...';
   const prompt=`다음 영어 문장을 자연스러운 한국어로 번역해줘. 번역 결과만 반환하고 다른 텍스트는 없어야 해.\n영어: ${exText}`;
   try {
     let result;
@@ -742,12 +744,12 @@ async function autoTranslateExample(btn){
       const data=await resp.json();result=data.content[0].text.trim();
     }
     document.getElementById('add-expr-example-ko').value=result;
-  } catch(e){alert('번역 실패: '+e.message);}
-  btn.disabled=false;btn.textContent='✨ 자동번역';
+  } catch(e){alert('Translation failed: '+e.message);}
+  btn.disabled=false;btn.textContent='✨ Auto-translate';
 }
 
 // ── ADD ───────────────────────────────────────────
-let selTag={expr:'업무',sent:'업무'};
+let selTag={expr:'Work',sent:'Work'};
 function toggleTag(el,form){
   el.closest('.add-section').querySelectorAll('.tag').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');selTag[form]=el.dataset.tag;
@@ -757,7 +759,7 @@ function populateAddSelects(){
     const deckSel=document.getElementById('add-'+form+'-deck');
     if(!deckSel) return;
     const cur=deckSel.value;
-    deckSel.innerHTML='<option value="">-- 덱 없이 추가 --</option>';
+    deckSel.innerHTML='<option value="">-- No deck --</option>';
     decks.forEach(d=>{ const o=document.createElement('option');o.value=d.id;o.textContent=d.name;deckSel.appendChild(o); });
     if(cur) deckSel.value=cur;
     updateSetSelect(form);
@@ -769,7 +771,7 @@ function updateSetSelect(form){
   const setSel=document.getElementById('add-'+form+'-set');
   if(!deckId){setGroup.style.display='none';return;}
   setGroup.style.display='flex';
-  setSel.innerHTML='<option value="">-- 세트 없이 추가 --</option>';
+  setSel.innerHTML='<option value="">-- No set --</option>';
   sets.filter(s=>String(s.deck_id)===String(deckId)).forEach(s=>{
     const o=document.createElement('option');o.value=s.id;o.textContent=s.name;setSel.appendChild(o);
   });
@@ -778,7 +780,7 @@ async function addExpression(){
   const en=document.getElementById('add-expr-en').value.trim();
   const ko=document.getElementById('add-expr-ko').value.trim();
   const ex=document.getElementById('add-expr-example').value.trim();
-  if(!en||!ko||!ex){alert('영어 표현, 한국어 의미, 예시 문장을 모두 입력해주세요');return;}
+  if(!en||!ko||!ex){alert('Please fill in the English expression, Korean meaning, and example sentence.');return;}
   const exKo=document.getElementById('add-expr-example-ko').value.trim();
   const deckId=document.getElementById('add-expr-deck').value||null;
   const setId=document.getElementById('add-expr-set').value||null;
@@ -792,7 +794,7 @@ async function addExpression(){
 async function addSentence(){
   const en=document.getElementById('add-sent-en').value.trim();
   const ko=document.getElementById('add-sent-ko').value.trim();
-  if(!en||!ko){alert('영어 문장과 한국어 의미를 입력해주세요');return;}
+  if(!en||!ko){alert('Please enter the English sentence and Korean meaning.');return;}
   const setId=document.getElementById('add-sent-set').value||null;
   await addItemData({type:'sent',en,ko,example:'',tag:selTag.sent},setId?Number(setId):null);
   document.getElementById('add-sent-en').value='';
@@ -816,15 +818,15 @@ async function saveEdit(id){
   const ko=document.getElementById('edit-ko-'+id).value.trim();
   const example=document.getElementById('edit-example-'+id).value.trim();
   const example_ko=document.getElementById('edit-example-ko-'+id).value.trim();
-  if(!en||!ko){alert('영어 표현과 한국어 의미는 필수야');return;}
+  if(!en||!ko){alert('English expression and Korean meaning are required.');return;}
   await updateItem(id,{en,ko,example,example_ko});
   editingId=null;renderWords(wordTab);updateHome();
 }
 async function editAutoTranslate(id,btn){
   const exText=document.getElementById('edit-example-'+id).value.trim();
-  if(!exText){alert('먼저 예시 문장을 입력해줘');return;}
-  if(!apiKey){alert('번역 API 키가 필요해. 번역 탭에서 먼저 설정해줘');return;}
-  btn.disabled=true;btn.textContent='번역 중...';
+  if(!exText){alert('Please enter an example sentence first');return;}
+  if(!apiKey){alert('API key required. Set it in the Translate tab first.');return;}
+  btn.disabled=true;btn.textContent='Translating...';
   const prompt=`다음 영어 문장을 자연스러운 한국어로 번역해줘. 번역 결과만 반환하고 다른 텍스트는 없어야 해.\n영어: ${exText}`;
   try {
     let result;
@@ -838,18 +840,18 @@ async function editAutoTranslate(id,btn){
       const data=await resp.json();result=data.content[0].text.trim();
     }
     document.getElementById('edit-example-ko-'+id).value=result;
-  } catch(e){alert('번역 실패: '+e.message);}
-  btn.disabled=false;btn.textContent='✨ 자동번역';
+  } catch(e){alert('Translation failed: '+e.message);}
+  btn.disabled=false;btn.textContent='✨ Auto-translate';
 }
 
 // ── CSV ───────────────────────────────────────────
 function downloadCsvTemplate(){
   const content=[
     'deck,set,type,en,ko,example,tag,example_ko',
-    '비즈니스 영어,이메일 표현,expr,keep you posted,계속 알려주다,I\'ll keep you posted on any updates.,업무,계속 알려줄게.',
-    '비즈니스 영어,이메일 표현,sent,I\'ll get back to you on that.,확인 후 다시 연락할게,,업무,',
-    '비즈니스 영어,회의 표현,expr,wrap up,마무리하다,Let\'s wrap up the meeting.,업무,회의를 마무리하자.',
-    '일상 영어,구어 표현,expr,hang out,놀다/어울리다,Do you want to hang out this weekend?,일상,이번 주말에 같이 놀래?',
+    'Business English,Email Phrases,expr,keep you posted,계속 알려주다,I\'ll keep you posted on any updates.,Work,계속 알려줄게.',
+    'Business English,Email Phrases,sent,I\'ll get back to you on that.,확인 후 다시 연락할게,,Work,',
+    'Business English,Meeting Expressions,expr,wrap up,마무리하다,Let\'s wrap up the meeting.,Work,회의를 마무리하자.',
+    'Daily English,Spoken Phrases,expr,hang out,놀다/어울리다,Do you want to hang out this weekend?,Daily,이번 주말에 같이 놀래?',
   ].join('\n');
   const blob=new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);
@@ -861,7 +863,7 @@ function handleCsvDrop(e){
   zone.style.borderColor='var(--border2)';zone.style.background='none';
   const file=e.dataTransfer.files[0];
   if(file&&(file.name.endsWith('.csv')||file.name.endsWith('.xlsx'))) handleFile(file);
-  else alert('.csv 또는 .xlsx 파일만 업로드할 수 있어!');
+  else alert('Only .csv or .xlsx files are supported!');
 }
 function handleCsvFile(input){if(input.files[0]) handleFile(input.files[0]);}
 function handleFile(file){
@@ -891,37 +893,37 @@ function handleFile(file){
 function processRows(rows){
     const dataRows=rows[0]&&String(rows[0][0]).toLowerCase()==='deck'?rows.slice(1):rows;
     const valid=dataRows.filter(r=>r.length>=5&&r[2]&&r[3]&&r[4]);
-    if(!valid.length){alert('유효한 데이터가 없어! 형식을 확인해줘');return;}
+    if(!valid.length){alert('No valid data found. Please check the file format.');return;}
     const preview=document.getElementById('csv-preview');
     preview.style.display='block';
     preview.innerHTML=`
       <div style="background:var(--accent-light);border:1px solid rgba(45,106,45,0.2);border-radius:var(--r);padding:12px;margin-bottom:10px;">
-        <div style="font-size:13px;color:var(--accent);font-weight:700;margin-bottom:4px;">📋 미리보기</div>
-        <div style="font-size:12px;color:var(--text2);">총 ${valid.length}개 항목</div>
+        <div style="font-size:13px;color:var(--accent);font-weight:700;margin-bottom:4px;">📋 Preview</div>
+        <div style="font-size:12px;color:var(--text2);">${valid.length} items total</div>
       </div>
       <div style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;">
         ${valid.slice(0,5).map(r=>`
           <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;">
-            <span class="type-pill ${r[2]==='expr'?'type-expr':'type-sent'}">${r[2]==='expr'?'표현':'문장'}</span>
+            <span class="type-pill ${r[2]==='expr'?'type-expr':'type-sent'}">${r[2]==='expr'?'Expr':'Sent'}</span>
             <span style="font-family:var(--font-mono);color:var(--text);margin-left:6px;">${r[3]}</span>
             <span style="color:var(--text3);"> — ${r[4]}</span>
             ${r[0]?`<span style="font-size:10px;color:var(--text3);margin-left:4px;">[${r[0]}${r[1]?' > '+r[1]:''}]</span>`:''}
           </div>`).join('')}
-        ${valid.length>5?`<div style="padding:8px 12px;font-size:11px;color:var(--text3);">... 외 ${valid.length-5}개</div>`:''}
+        ${valid.length>5?`<div style="padding:8px 12px;font-size:11px;color:var(--text3);">... and ${valid.length-5} more</div>`:''}
       </div>
       <button onclick="importCsvData(this)" data-rows='${JSON.stringify(valid).replace(/'/g,"&#39;")}' style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);">
-        ${valid.length}개 전체 추가하기
+        Add all ${valid.length} items
       </button>`;
 }
 async function importCsvData(btn){
   const rows=JSON.parse(btn.dataset.rows.replace(/&#39;/g,"'"));
-  btn.disabled=true;btn.textContent='추가 중...';
+  btn.disabled=true;btn.textContent='Adding...';
   let added=0,skipped=0;
   // 덱/세트 캐시
   const deckCache={},setCache={};
   for(const r of rows){
     const deckName=r[0]?.trim(),setName=r[1]?.trim(),type=r[2]==='expr'?'expr':'sent';
-    const en=r[3],ko=r[4],example=r[5]||'',tag=r[6]||'기타',example_ko=r[7]||'';
+    const en=r[3],ko=r[4],example=r[5]||'',tag=r[6]||'Other',example_ko=r[7]||'';
     if(items.find(i=>i.en.toLowerCase()===en.toLowerCase())){skipped++;continue;}
     // 덱 처리
     let deckId=null,setId=null;
@@ -945,13 +947,13 @@ async function importCsvData(btn){
     }
     const row=await insertItem({type,en,ko,example,example_ko,tag});
     if(row){if(setId) await addItemToSet(setId,row.id);added++;}
-    btn.textContent=`추가 중... ${added+skipped}/${rows.length}`;
+    btn.textContent=`Adding... ${added+skipped}/${rows.length}`;
   }
   updateHome();populateAddSelects();
   document.getElementById('csv-preview').innerHTML=`
     <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:var(--r);padding:14px;text-align:center;">
-      <div style="font-size:16px;margin-bottom:4px;">✅ 완료!</div>
-      <div style="font-size:13px;color:var(--green);">${added}개 추가 ${skipped>0?`/ ${skipped}개 중복 건너뜀`:''}</div>
+      <div style="font-size:16px;margin-bottom:4px;">✅ Done!</div>
+      <div style="font-size:13px;color:var(--green);">${added} added${skipped>0?` / ${skipped} duplicates skipped`:''}</div>
     </div>`;
   document.getElementById('csv-file-input').value='';
 }
@@ -971,15 +973,15 @@ function renderReview(){
     // 모드 선택 UI
     area.innerHTML=`
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <button onclick="reviewMode='all';renderDecksPage();showPage('decks')" class="ghost-btn">← 덱으로</button>
-        <div style="font-size:12px;color:var(--text2);flex:1;">${rQueue.length}개 카드 복습</div>
+        <button onclick="reviewMode='all';renderDecksPage();showPage('decks')" class="ghost-btn">← Back to decks</button>
+        <div style="font-size:12px;color:var(--text2);flex:1;">${rQueue.length} cards to review</div>
       </div>
       <div class="card" style="margin-bottom:12px;">
-        <div class="card-title">복습 모드 선택</div>
+        <div class="card-title">Select review mode</div>
         <div class="mode-select-row" style="grid-template-columns:1fr 1fr 1fr;">
-          <button class="mode-btn" onclick="reviewType='ko-en';startReviewCards()">🇰🇷→🇺🇸<br><span style="font-size:11px;color:var(--text3);">한국어→영어</span></button>
-          <button class="mode-btn" onclick="reviewType='blank';startReviewCards()">✏️ 빈칸<br><span style="font-size:11px;color:var(--text3);">빈칸 채우기</span></button>
-          <button class="mode-btn" onclick="reviewType='ko-example';startReviewCards()">📖 예시문장<br><span style="font-size:11px;color:var(--text3);">한국어→예시</span></button>
+          <button class="mode-btn" onclick="reviewType='ko-en';startReviewCards()">🇰🇷→🇺🇸<br><span style="font-size:11px;color:var(--text3);">KO → EN</span></button>
+          <button class="mode-btn" onclick="reviewType='blank';startReviewCards()">✏️ Blank<br><span style="font-size:11px;color:var(--text3);">Fill in the blank</span></button>
+          <button class="mode-btn" onclick="reviewType='ko-example';startReviewCards()">📖 Example<br><span style="font-size:11px;color:var(--text3);">KO → Example</span></button>
         </div>
       </div>`;
   } else {
@@ -994,8 +996,8 @@ function nextCard(){
   if(!rQueue.length){
     if(rDone>0) updateStreak();
     area.innerHTML=rDone===0
-      ?`<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">오늘 복습 완료!</div><div class="done-sub">모든 카드를 다 봤어<br>내일 또 만나자</div></div>`
-      :`<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone}개 복습 완료!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak}일 연속 학습 중</div></div>`;
+      ?`<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">All done for today!</div><div class="done-sub">You've reviewed all cards<br>See you tomorrow!</div></div>`
+      :`<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone} cards reviewed!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak} day streak</div></div>`;
     updateHome();return;
   }
   rCurrent=rQueue.shift();
@@ -1006,19 +1008,19 @@ function nextCard(){
     <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
   </div>
   <div style="display:flex;gap:6px;margin-bottom:10px;">
-    ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
+    ${rCurrent.type==='expr'?'<span class="type-pill type-expr">Expr</span>':'<span class="type-pill type-sent">Sent</span>'}
     <span style="font-size:11px;color:var(--text3);align-self:center;">${rCurrent.tag}</span>
   </div>`;
   if(reviewType==='ko-example'){
     if(!rCurrent.example_ko||!rCurrent.example){rDone++;nextCard();return;}
     area.innerHTML=progressHtml+`
       <div class="review-card">
-        <div class="rc-label">한국어 → 예시 문장</div>
+        <div class="rc-label">Korean → Example sentence</div>
         <div class="rc-main">${rCurrent.example_ko}</div>
       </div>
-      <button class="flip-btn" style="margin-top:10px;" onclick="flipCardExample()">정답 보기</button>`;
-  } else if(reviewType==='blank'&&rCurrent.example){
-    // 빈칸 모드
+      <button class="flip-btn" style="margin-top:10px;" onclick="flipCardExample()">Show answer</button>`;
+  } else if(reviewType==='blank'){
+    if(!rCurrent.example){rDone++;nextCard();return;}
     const words=rCurrent.en.split(' ');
     const keyWords=words.filter(w=>w.length>3);
     const targetWord=keyWords[Math.floor(Math.random()*keyWords.length)]||words[0];
@@ -1026,19 +1028,18 @@ function nextCard(){
     const blankedExample=rCurrent.example.replace(new RegExp(clean,'gi'),`<span class="blank" id="blank-word">${clean}</span>`);
     area.innerHTML=progressHtml+`
       <div class="review-card">
-        <div class="rc-label">빈칸 채우기</div>
+        <div class="rc-label">Fill in the blank</div>
         <div class="rc-main" style="font-size:16px;line-height:1.8;">${blankedExample}</div>
-        <div class="rc-sub" style="margin-top:12px;">힌트: ${rCurrent.ko}</div>
+        <div class="rc-sub" style="margin-top:12px;">Hint: ${rCurrent.ko}</div>
       </div>
-      <button class="flip-btn" style="margin-top:10px;" onclick="revealBlank()">정답 보기</button>`;
+      <button class="flip-btn" style="margin-top:10px;" onclick="revealBlank()">Show answer</button>`;
   } else {
-    // 한→영 모드
     area.innerHTML=progressHtml+`
       <div class="review-card">
-        <div class="rc-label">한국어 → 영어</div>
+        <div class="rc-label">Korean → English</div>
         <div class="rc-main">${rCurrent.ko}</div>
       </div>
-      <button class="flip-btn" style="margin-top:10px;" onclick="flipCard()">정답 보기</button>`;
+      <button class="flip-btn" style="margin-top:10px;" onclick="flipCard()">Show answer</button>`;
   }
 }
 
@@ -1047,7 +1048,7 @@ function revealBlank(){
   if(blank){blank.classList.add('revealed');}
   const btn=document.querySelector('.flip-btn');
   if(btn){
-    btn.textContent='다음';btn.onclick=()=>showRatingButtons();
+    btn.textContent='Next';btn.onclick=()=>showRatingButtons();
   }
 }
 
@@ -1058,11 +1059,11 @@ function showRatingButtons(){
   // 정답 + 평가 버튼 표시
   area.innerHTML+=`
   <div style="margin-top:10px;">
-    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">얼마나 잘 기억했어?</div>
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
     <div class="answer-row">
-      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
-      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
-      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
+      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">Try again</span></button>
+      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">Review soon</span></button>
+      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">Got it!</span></button>
     </div>
   </div>`;
 }
@@ -1076,19 +1077,19 @@ function flipCard(){
     <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
   </div>
   <div style="display:flex;gap:6px;margin-bottom:10px;">
-    ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
+    ${rCurrent.type==='expr'?'<span class="type-pill type-expr">Expr</span>':'<span class="type-pill type-sent">Sent</span>'}
   </div>
   <div class="review-card">
-    <div class="rc-label">정답</div>
+    <div class="rc-label">Answer</div>
     <div class="rc-answer-main">${rCurrent.en}</div>
     ${rCurrent.example?`<div class="rc-answer-example">"${rCurrent.example}"</div>`:''}
   </div>
   <div style="margin-top:10px;">
-    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">얼마나 잘 기억했어?</div>
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
     <div class="answer-row">
-      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
-      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
-      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
+      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">Try again</span></button>
+      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">Review soon</span></button>
+      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">Got it!</span></button>
     </div>
   </div>`;
 }
@@ -1102,19 +1103,19 @@ function flipCardExample(){
     <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
   </div>
   <div style="display:flex;gap:6px;margin-bottom:10px;">
-    ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
+    ${rCurrent.type==='expr'?'<span class="type-pill type-expr">Expr</span>':'<span class="type-pill type-sent">Sent</span>'}
   </div>
   <div class="review-card">
-    <div class="rc-label">정답</div>
+    <div class="rc-label">Answer</div>
     <div class="rc-answer-main">${rCurrent.example}</div>
     <div class="rc-sub" style="margin-top:8px;">${rCurrent.en} — ${rCurrent.ko}</div>
   </div>
   <div style="margin-top:10px;">
-    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">얼마나 잘 기억했어?</div>
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
     <div class="answer-row">
-      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
-      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
-      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
+      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">Try again</span></button>
+      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">Review soon</span></button>
+      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">Got it!</span></button>
     </div>
   </div>`;}
 
@@ -1133,7 +1134,7 @@ function switchWordTab(el,tab){
 function renderWords(tab){
   const list=document.getElementById('words-list');
   const filtered=tab==='all'?items:items.filter(i=>i.type===tab);
-  if(!filtered.length){list.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요</div>';return;}
+  if(!filtered.length){list.innerHTML='<div class="empty-state">No items saved yet</div>';return;}
   list.innerHTML=filtered.map(w=>renderItemRow(w,true)).join('');
 }
 
@@ -1150,11 +1151,11 @@ function renderDecksList(){
   const el=document.getElementById('decks-main');
   el.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div style="font-size:14px;font-weight:700;color:var(--text);">내 덱</div>
-      <button class="action-btn" onclick="promptCreateDeck()">+ 새 덱</button>
+      <div style="font-size:14px;font-weight:700;color:var(--text);">My Decks</div>
+      <button class="action-btn" onclick="promptCreateDeck()">+ New Deck</button>
     </div>
     ${decks.length===0
-      ?'<div class="empty-state">아직 덱이 없어요<br>"+ 새 덱" 버튼으로 만들어봐!</div>'
+      ?'<div class="empty-state">No decks yet<br>Create one with the "+ New Deck" button!</div>'
       :decks.map(d=>{
         const dSets=sets.filter(s=>s.deck_id===d.id);
         const dItems=getDeckItems(d.id);
@@ -1164,14 +1165,14 @@ function renderDecksList(){
             <div>
               <div class="deck-name">📚 ${d.name}</div>
               <div class="deck-meta">
-                <span>${dSets.length}개 세트</span>
-                <span>${dItems.length}개 카드</span>
-                ${due>0?`<span class="due">복습 ${due}개</span>`:''}
+                <span>${dSets.length} sets</span>
+                <span>${dItems.length} cards</span>
+                ${due>0?`<span class="due">${due} due</span>`:''}
               </div>
             </div>
             <div style="display:flex;gap:6px;">
-              ${due>0?`<button onclick="event.stopPropagation();startDeckReview(${d.id})" class="action-btn" style="font-size:11px;padding:6px 10px;">복습</button>`:''}
-              <button onclick="event.stopPropagation();confirmDeleteDeck(${d.id})" class="ghost-btn" style="font-size:11px;">삭제</button>
+              ${due>0?`<button onclick="event.stopPropagation();startDeckReview(${d.id})" class="action-btn" style="font-size:11px;padding:6px 10px;">Review</button>`:''}
+              <button onclick="event.stopPropagation();confirmDeleteDeck(${d.id})" class="ghost-btn" style="font-size:11px;">Delete</button>
             </div>
           </div>
         </div>`;
@@ -1188,34 +1189,34 @@ function renderDeckDetail(){
   const el=document.getElementById('decks-main');
   el.innerHTML=`
     <div class="breadcrumb">
-      <button onclick="deckView={mode:'list'};renderDecksList()">덱 목록</button>
+      <button onclick="deckView={mode:'list'};renderDecksList()">Decks</button>
       <span>›</span>
       <span style="color:var(--text);">${deck.name}</span>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <div>
         <div style="font-size:15px;font-weight:700;">📚 ${deck.name}</div>
-        <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;">${dItems.length}개 카드 ${due>0?`· 복습 ${due}개`:''}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;">${dItems.length} cards${due>0?` · ${due} due`:''}</div>
       </div>
       <div style="display:flex;gap:6px;">
-        ${due>0?`<button class="action-btn" onclick="startDeckReview(${deck.id})">복습</button>`:''}
-        <button class="ghost-btn" onclick="promptCreateSet(${deck.id})">+ 세트</button>
+        ${due>0?`<button class="action-btn" onclick="startDeckReview(${deck.id})">Review</button>`:''}
+        <button class="ghost-btn" onclick="promptCreateSet(${deck.id})">+ Set</button>
         <button class="ghost-btn" onclick="downloadDeckXlsx(${deck.id})">📥 xlsx</button>
       </div>
     </div>
     ${deckSets.length===0
-      ?'<div class="empty-state">아직 세트가 없어요<br>"+ 세트" 버튼으로 만들어봐!</div>'
+      ?'<div class="empty-state">No sets yet<br>Create one with the "+ Set" button!</div>'
       :deckSets.map(s=>{
         const sItems=getSetItems(s.id);
         const sDue=sItems.filter(i=>!i.next_review||i.next_review<=today()).length;
         return `<div class="set-card" onclick="openSet(${s.id})">
           <div>
             <div class="set-name">📂 ${s.name}</div>
-            <div class="set-meta">${sItems.length}개 카드 ${sDue>0?`· 복습 ${sDue}개`:''}</div>
+            <div class="set-meta">${sItems.length} cards${sDue>0?` · ${sDue} due`:''}</div>
           </div>
           <div style="display:flex;gap:6px;">
-            ${sDue>0?`<button onclick="event.stopPropagation();startSetReview(${s.id})" class="action-btn" style="font-size:11px;padding:6px 10px;">복습</button>`:''}
-            <button onclick="event.stopPropagation();confirmDeleteSet(${s.id})" class="ghost-btn" style="font-size:11px;">삭제</button>
+            ${sDue>0?`<button onclick="event.stopPropagation();startSetReview(${s.id})" class="action-btn" style="font-size:11px;padding:6px 10px;">Review</button>`:''}
+            <button onclick="event.stopPropagation();confirmDeleteSet(${s.id})" class="ghost-btn" style="font-size:11px;">Delete</button>
           </div>
         </div>`;
       }).join('')
@@ -1232,49 +1233,49 @@ function renderSetDetail(){
   const el=document.getElementById('decks-main');
   el.innerHTML=`
     <div class="breadcrumb">
-      <button onclick="deckView={mode:'list'};renderDecksList()">덱 목록</button>
+      <button onclick="deckView={mode:'list'};renderDecksList()">Decks</button>
       <span>›</span>
-      <button onclick="deckView={mode:'deck',deckId:${deck?.id}};renderDeckDetail()">${deck?.name||'덱'}</button>
+      <button onclick="deckView={mode:'deck',deckId:${deck?.id}};renderDeckDetail()">${deck?.name||'Deck'}</button>
       <span>›</span>
       <span style="color:var(--text);">${set.name}</span>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <div>
         <div style="font-size:15px;font-weight:700;">📂 ${set.name}</div>
-        <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;">${setItems.length}개 카드 ${due>0?`· 복습 ${due}개`:''}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;">${setItems.length} cards${due>0?` · ${due} due`:''}</div>
       </div>
       <div style="display:flex;gap:6px;">
-        ${due>0?`<button class="action-btn" onclick="startSetReview(${set.id})">복습 시작</button>`:''}
+        ${due>0?`<button class="action-btn" onclick="startSetReview(${set.id})">Start Review</button>`:''}
         <button class="ghost-btn" onclick="downloadSetXlsx(${set.id})">📥 xlsx</button>
       </div>
     </div>
     <!-- 세트 카드 -->
     <div class="card" style="margin-bottom:10px;">
-      <div class="card-title">카드 (${setItems.length})</div>
+      <div class="card-title">Cards (${setItems.length})</div>
       ${setItems.length===0
-        ?'<div class="empty-state" style="padding:16px;">아직 카드가 없어요</div>'
+        ?'<div class="empty-state" style="padding:16px;">No cards yet</div>'
         :setItems.map(w=>`
           <div class="item-row">
             <div style="flex:1;min-width:0;">
               <div class="item-en">${w.en}</div>
               <div class="item-ko">${w.ko}</div>
             </div>
-            <button onclick="removeFromSet(${set.id},${w.id})" class="ghost-btn" style="font-size:11px;">제거</button>
+            <button onclick="removeFromSet(${set.id},${w.id})" class="ghost-btn" style="font-size:11px;">Remove</button>
           </div>`).join('')
       }
     </div>
     <!-- 카드 추가 -->
     ${notInSet.length>0?`
     <div class="card">
-      <div class="card-title">카드 추가 (${notInSet.length})</div>
-      <input type="text" id="set-search" placeholder="검색..." oninput="filterSetCandidates(${set.id})" style="margin-bottom:10px;" />
+      <div class="card-title">Add Cards (${notInSet.length})</div>
+      <input type="text" id="set-search" placeholder="Search..." oninput="filterSetCandidates(${set.id})" style="margin-bottom:10px;" />
       <div id="set-candidates">
         ${notInSet.slice(0,15).map(w=>`
           <div class="item-row">
             <div style="flex:1;min-width:0;"><div class="item-en">${w.en}</div><div class="item-ko">${w.ko}</div></div>
-            <button onclick="addToSet(${set.id},${w.id})" class="action-btn" style="font-size:11px;padding:5px 10px;">추가</button>
+            <button onclick="addToSet(${set.id},${w.id})" class="action-btn" style="font-size:11px;padding:5px 10px;">Add</button>
           </div>`).join('')}
-        ${notInSet.length>15?`<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px;">검색으로 더 찾아봐</div>`:''}
+        ${notInSet.length>15?`<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px;">Search to find more</div>`:''}
       </div>
     </div>`:''}`;
 }
@@ -1286,30 +1287,40 @@ function filterSetCandidates(setId){
   document.getElementById('set-candidates').innerHTML=filtered.slice(0,15).map(w=>`
     <div class="item-row">
       <div style="flex:1;min-width:0;"><div class="item-en">${w.en}</div><div class="item-ko">${w.ko}</div></div>
-      <button onclick="addToSet(${setId},${w.id})" class="action-btn" style="font-size:11px;padding:5px 10px;">추가</button>
+      <button onclick="addToSet(${setId},${w.id})" class="action-btn" style="font-size:11px;padding:5px 10px;">Add</button>
     </div>`).join('');
 }
 
 async function openDeck(id){deckView={mode:'deck',deckId:id};renderDeckDetail();}
 async function openSet(id){const s=sets.find(x=>x.id===id);deckView={mode:'set',deckId:s?.deck_id,setId:id};renderSetDetail();}
 async function promptCreateDeck(){
-  const name=prompt('덱 이름을 입력해줘\n예: 비즈니스 영어, 일상 회화, 테크 용어');
+  const name=prompt('Enter deck name\nExample: Business English, Daily Conversation, Tech Terms');
   if(!name?.trim()) return;
   await createDeck(name.trim());populateAddSelects();renderDecksList();
 }
 async function promptCreateSet(deckId){
-  const name=prompt('세트 이름을 입력해줘\n예: 이메일 표현, 회의 표현, 1-1');
+  const name=prompt('Enter set name\nExample: Email Phrases, Meeting Expressions, 1-on-1');
   if(!name?.trim()) return;
   await createSet(deckId,name.trim());populateAddSelects();renderDeckDetail();
 }
 async function confirmDeleteDeck(id){
   const d=decks.find(x=>x.id===id);
-  if(!confirm(`"${d?.name}" 덱을 삭제할까?\n(세트와 카드 연결도 삭제돼. 카드 자체는 유지됨)`)) return;
-  await deleteDeck(id);populateAddSelects();renderDecksList();
+  if(!confirm(`Delete deck "${d?.name}"?\nSets and card links will also be removed.`)) return;
+  const dItems=getDeckItems(id);
+  let deleteItems=false;
+  if(dItems.length>0){
+    deleteItems=confirm(`Also delete ${dItems.length} cards from your word list?\n\nOK → delete cards too\nCancel → keep cards in word list`);
+  }
+  if(deleteItems&&dItems.length>0){
+    const ids=dItems.map(i=>i.id);
+    await sb.from('items').delete().in('id',ids).eq('user_id',currentUser.id);
+    items=items.filter(i=>!ids.includes(i.id));
+  }
+  await deleteDeck(id);populateAddSelects();renderDecksList();updateHome();
 }
 async function confirmDeleteSet(id){
   const s=sets.find(x=>x.id===id);
-  if(!confirm(`"${s?.name}" 세트를 삭제할까?`)) return;
+  if(!confirm(`Delete set "${s?.name}"?`)) return;
   await deleteSet(id);populateAddSelects();
   if(deckView.mode==='set') deckView={mode:'deck',deckId:s.deck_id};
   renderDecksPage();
@@ -1327,7 +1338,7 @@ function downloadDeckXlsx(deckId){
       rows.push([deck.name,s.name,item.type,item.en,item.ko,item.example||'',item.example_ko||'',item.tag||'']);
     });
   });
-  if(rows.length===1){alert('덱에 카드가 없어요');return;}
+  if(rows.length===1){alert('No cards in this deck');return;}
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb,ws,deck.name.slice(0,31));
@@ -1341,7 +1352,7 @@ function downloadSetXlsx(setId){
   getSetItems(setId).forEach(item=>{
     rows.push([deck?.name||'',set.name,item.type,item.en,item.ko,item.example||'',item.example_ko||'',item.tag||'']);
   });
-  if(rows.length===1){alert('세트에 카드가 없어요');return;}
+  if(rows.length===1){alert('No cards in this set');return;}
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb,ws,set.name.slice(0,31));
