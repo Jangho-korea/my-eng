@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="icon-192.png" />
   <title>MY·ENG</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Gowun+Dodum&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -282,6 +283,16 @@
         <input type="text" id="add-expr-example" placeholder="예: Let's get the ball rolling on this project." />
       </div>
       <div class="input-group">
+        <div class="input-label">예시 문장 한국어 번역 (선택사항)</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="add-expr-example-ko" placeholder="예: 이 프로젝트를 시작해보자." style="flex:1;" />
+          <button type="button" onclick="autoTranslateExample(this)"
+            style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 12px;font-size:12px;cursor:pointer;font-family:var(--font-body);white-space:nowrap;font-weight:700;">
+            ✨ 자동번역
+          </button>
+        </div>
+      </div>
+      <div class="input-group">
         <div class="input-label">덱 선택 (선택사항)</div>
         <select id="add-expr-deck" onchange="updateSetSelect('expr')">
           <option value="">-- 덱 없이 추가 --</option>
@@ -345,9 +356,9 @@
         <span style="font-size:13px;color:var(--text2);">CSV 파일로 대량 추가</span>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--text3);line-height:1.9;font-family:var(--font-mono);">
-        deck, set, type, en, ko, example, tag<br>
-        비즈니스, 이메일, expr, keep you posted, 계속 알려주다, I'll keep you posted., 업무<br>
-        비즈니스, 회의, sent, Let's wrap up., 마무리하자, , 업무
+        deck, set, type, en, ko, example, tag, example_ko<br>
+        비즈니스, 이메일, expr, keep you posted, 계속 알려주다, I'll keep you posted., 업무, 계속 알려줄게<br>
+        비즈니스, 회의, sent, Let's wrap up., 마무리하자, , 업무,
       </div>
       <button onclick="downloadCsvTemplate()" style="width:100%;background:none;border:1px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:10px;font-size:13px;cursor:pointer;font-family:var(--font-body);margin-bottom:10px;">
         📥 양식 파일 다운로드 (.csv)
@@ -358,10 +369,10 @@
         ondragleave="this.style.borderColor='var(--border2)';this.style.background='none'"
         ondrop="handleCsvDrop(event)">
         <div style="font-size:24px;margin-bottom:8px;">📄</div>
-        <div style="font-size:13px;color:var(--text2);">CSV 파일을 드래그하거나 클릭해서 선택</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">.csv 파일만 지원</div>
+        <div style="font-size:13px;color:var(--text2);">파일을 드래그하거나 클릭해서 선택</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">.csv 또는 .xlsx 지원</div>
       </div>
-      <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleCsvFile(this)" />
+      <input type="file" id="csv-file-input" accept=".csv,.xlsx" style="display:none;" onchange="handleCsvFile(this)" />
       <div id="csv-preview" style="display:none;margin-top:12px;"></div>
     </div>
   </div>
@@ -401,6 +412,7 @@ let items = [], decks = [], sets = [], itemSets = [];
 let streak = 0, lastStudyDate = null, currentUser = null;
 let apiKey = '', apiProvider = 'openai';
 let selectedProvider = 'openai';
+let editingId = null;
 
 // ── UTILS ─────────────────────────────────────────
 function today() { return new Date().toISOString().split('T')[0]; }
@@ -417,6 +429,7 @@ function setSyncStatus(s) {
   else{el.textContent='';el.className='sync-indicator';}
 }
 function esc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');}
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ── AUTH ──────────────────────────────────────────
 async function initAuth() {
@@ -487,7 +500,7 @@ async function insertItem(data){
   setSyncStatus('syncing');
   const {data:row,error}=await sb.from('items').insert({
     user_id:currentUser.id,type:data.type,en:data.en,ko:data.ko,
-    example:data.example||'',tag:data.tag||'기타',level:0,next_review:today(),added_at:today()
+    example:data.example||'',example_ko:data.example_ko||'',tag:data.tag||'기타',level:0,next_review:today(),added_at:today()
   }).select().single();
   if(!error&&row){items.unshift(row);setSyncStatus('synced');return row;}
   setSyncStatus(''); return null;
@@ -577,7 +590,23 @@ function updateHome(){
   if(!items.length){el.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요<br>번역하거나 직접 추가해보세요!</div>';return;}
   el.innerHTML=items.slice(0,5).map(renderItemRow).join('');
 }
-function renderItemRow(w){
+function renderItemRow(w, showEdit=false){
+  if(showEdit && editingId===w.id){
+    return `<div class="item-row" style="flex-direction:column;align-items:stretch;gap:8px;padding:14px 0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">편집 중</span>
+        <button onclick="cancelEdit()" class="ghost-btn" style="font-size:11px;">취소</button>
+      </div>
+      <input type="text" id="edit-en-${w.id}" value="${escHtml(w.en)}" placeholder="영어 표현" />
+      <input type="text" id="edit-ko-${w.id}" value="${escHtml(w.ko)}" placeholder="한국어 의미" />
+      <input type="text" id="edit-example-${w.id}" value="${escHtml(w.example||'')}" placeholder="예시 문장" />
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="edit-example-ko-${w.id}" value="${escHtml(w.example_ko||'')}" placeholder="예시 번역 (한국어)" style="flex:1;" />
+        <button type="button" onclick="editAutoTranslate(${w.id},this)" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 12px;font-size:12px;cursor:pointer;font-family:var(--font-body);white-space:nowrap;font-weight:700;">✨ 자동번역</button>
+      </div>
+      <button onclick="saveEdit(${w.id})" class="action-btn" style="width:100%;padding:11px;font-size:13px;">저장</button>
+    </div>`;
+  }
   const lvl=w.level||0;
   const cls=lvl===0?'level-new':lvl<4?'level-learning':'level-known';
   const lbl=lvl===0?'NEW':lvl<4?'Lv.'+lvl:'✓';
@@ -588,7 +617,10 @@ function renderItemRow(w){
       <div class="item-en">${w.en}</div><div class="item-ko">${w.ko}</div>
       ${w.example?`<div class="item-example">"${w.example}"</div>`:''}
     </div>
-    <button class="delete-btn" onclick="deleteItem(${w.id})">✕</button>
+    <div style="display:flex;gap:4px;flex-shrink:0;">
+      ${showEdit?`<button class="ghost-btn" style="font-size:11px;padding:4px 8px;" onclick="editItem(${w.id})">편집</button>`:''}
+      <button class="delete-btn" onclick="deleteItem(${w.id})">✕</button>
+    </div>
   </div>`;
 }
 
@@ -692,6 +724,28 @@ async function doTranslate(){
 async function saveExprFromTrans(en,ko,example,btn){await addItemData({type:'expr',en,ko,example,tag:'번역'});btn.textContent='✓ 저장됨';btn.classList.add('saved');}
 async function saveSentFromTrans(en,ko,btn){await addItemData({type:'sent',en,ko,example:'',tag:'번역'});btn.textContent='✓ 저장됨';btn.classList.add('saved');}
 
+async function autoTranslateExample(btn){
+  const exText=document.getElementById('add-expr-example').value.trim();
+  if(!exText){alert('먼저 예시 문장을 입력해줘');return;}
+  if(!apiKey){alert('번역 API 키가 필요해. 번역 탭에서 먼저 설정해줘');return;}
+  btn.disabled=true;btn.textContent='번역 중...';
+  const prompt=`다음 영어 문장을 자연스러운 한국어로 번역해줘. 번역 결과만 반환하고 다른 텍스트는 없어야 해.\n영어: ${exText}`;
+  try {
+    let result;
+    if(apiProvider==='openai'){
+      const resp=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:200,messages:[{role:'user',content:prompt}]})});
+      if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.status);}
+      const data=await resp.json();result=data.choices[0].message.content.trim();
+    } else {
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:prompt}]})});
+      if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.status);}
+      const data=await resp.json();result=data.content[0].text.trim();
+    }
+    document.getElementById('add-expr-example-ko').value=result;
+  } catch(e){alert('번역 실패: '+e.message);}
+  btn.disabled=false;btn.textContent='✨ 자동번역';
+}
+
 // ── ADD ───────────────────────────────────────────
 let selTag={expr:'업무',sent:'업무'};
 function toggleTag(el,form){
@@ -725,12 +779,14 @@ async function addExpression(){
   const ko=document.getElementById('add-expr-ko').value.trim();
   const ex=document.getElementById('add-expr-example').value.trim();
   if(!en||!ko||!ex){alert('영어 표현, 한국어 의미, 예시 문장을 모두 입력해주세요');return;}
+  const exKo=document.getElementById('add-expr-example-ko').value.trim();
   const deckId=document.getElementById('add-expr-deck').value||null;
   const setId=document.getElementById('add-expr-set').value||null;
-  await addItemData({type:'expr',en,ko,example:ex,tag:selTag.expr},setId?Number(setId):null);
+  await addItemData({type:'expr',en,ko,example:ex,example_ko:exKo,tag:selTag.expr},setId?Number(setId):null);
   document.getElementById('add-expr-en').value='';
   document.getElementById('add-expr-ko').value='';
   document.getElementById('add-expr-example').value='';
+  document.getElementById('add-expr-example-ko').value='';
   showPage('home');
 }
 async function addSentence(){
@@ -750,17 +806,50 @@ async function addItemData(data, setId=null){
   updateHome(); return row;
 }
 async function deleteItem(id){
+  if(editingId===id) editingId=null;
   await deleteItemDB(id); updateHome(); renderWords(wordTab);
+}
+function editItem(id){editingId=id;renderWords(wordTab);}
+function cancelEdit(){editingId=null;renderWords(wordTab);}
+async function saveEdit(id){
+  const en=document.getElementById('edit-en-'+id).value.trim();
+  const ko=document.getElementById('edit-ko-'+id).value.trim();
+  const example=document.getElementById('edit-example-'+id).value.trim();
+  const example_ko=document.getElementById('edit-example-ko-'+id).value.trim();
+  if(!en||!ko){alert('영어 표현과 한국어 의미는 필수야');return;}
+  await updateItem(id,{en,ko,example,example_ko});
+  editingId=null;renderWords(wordTab);updateHome();
+}
+async function editAutoTranslate(id,btn){
+  const exText=document.getElementById('edit-example-'+id).value.trim();
+  if(!exText){alert('먼저 예시 문장을 입력해줘');return;}
+  if(!apiKey){alert('번역 API 키가 필요해. 번역 탭에서 먼저 설정해줘');return;}
+  btn.disabled=true;btn.textContent='번역 중...';
+  const prompt=`다음 영어 문장을 자연스러운 한국어로 번역해줘. 번역 결과만 반환하고 다른 텍스트는 없어야 해.\n영어: ${exText}`;
+  try {
+    let result;
+    if(apiProvider==='openai'){
+      const resp=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:200,messages:[{role:'user',content:prompt}]})});
+      if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.status);}
+      const data=await resp.json();result=data.choices[0].message.content.trim();
+    } else {
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:prompt}]})});
+      if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.status);}
+      const data=await resp.json();result=data.content[0].text.trim();
+    }
+    document.getElementById('edit-example-ko-'+id).value=result;
+  } catch(e){alert('번역 실패: '+e.message);}
+  btn.disabled=false;btn.textContent='✨ 자동번역';
 }
 
 // ── CSV ───────────────────────────────────────────
 function downloadCsvTemplate(){
   const content=[
-    'deck,set,type,en,ko,example,tag',
-    '비즈니스 영어,이메일 표현,expr,keep you posted,계속 알려주다,I\'ll keep you posted on any updates.,업무',
-    '비즈니스 영어,이메일 표현,sent,I\'ll get back to you on that.,확인 후 다시 연락할게,,업무',
-    '비즈니스 영어,회의 표현,expr,wrap up,마무리하다,Let\'s wrap up the meeting.,업무',
-    '일상 영어,구어 표현,expr,hang out,놀다/어울리다,Do you want to hang out this weekend?,일상',
+    'deck,set,type,en,ko,example,tag,example_ko',
+    '비즈니스 영어,이메일 표현,expr,keep you posted,계속 알려주다,I\'ll keep you posted on any updates.,업무,계속 알려줄게.',
+    '비즈니스 영어,이메일 표현,sent,I\'ll get back to you on that.,확인 후 다시 연락할게,,업무,',
+    '비즈니스 영어,회의 표현,expr,wrap up,마무리하다,Let\'s wrap up the meeting.,업무,회의를 마무리하자.',
+    '일상 영어,구어 표현,expr,hang out,놀다/어울리다,Do you want to hang out this weekend?,일상,이번 주말에 같이 놀래?',
   ].join('\n');
   const blob=new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);
@@ -771,20 +860,36 @@ function handleCsvDrop(e){
   const zone=document.getElementById('csv-drop-zone');
   zone.style.borderColor='var(--border2)';zone.style.background='none';
   const file=e.dataTransfer.files[0];
-  if(file&&file.name.endsWith('.csv')) processCsvFile(file);
-  else alert('.csv 파일만 업로드할 수 있어!');
+  if(file&&(file.name.endsWith('.csv')||file.name.endsWith('.xlsx'))) handleFile(file);
+  else alert('.csv 또는 .xlsx 파일만 업로드할 수 있어!');
 }
-function handleCsvFile(input){if(input.files[0]) processCsvFile(input.files[0]);}
-function processCsvFile(file){
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const text=e.target.result;
-    const rows=text.trim().split('\n').map(r=>{
-      const result=[]; let cur=''; let inQ=false;
-      for(const ch of r){if(ch==='"'){inQ=!inQ;}else if(ch===','&&!inQ){result.push(cur.trim());cur='';}else{cur+=ch;}}
-      result.push(cur.trim()); return result.map(c=>c.replace(/^"|"$/g,''));
-    });
-    const dataRows=rows[0][0].toLowerCase()==='deck'?rows.slice(1):rows;
+function handleCsvFile(input){if(input.files[0]) handleFile(input.files[0]);}
+function handleFile(file){
+  if(file.name.endsWith('.xlsx')){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      processRows(rows);
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const text=e.target.result;
+      const rows=text.trim().split('\n').map(r=>{
+        const result=[]; let cur=''; let inQ=false;
+        for(const ch of r){if(ch==='"'){inQ=!inQ;}else if(ch===','&&!inQ){result.push(cur.trim());cur='';}else{cur+=ch;}}
+        result.push(cur.trim()); return result.map(c=>c.replace(/^"|"$/g,''));
+      });
+      processRows(rows);
+    };
+    reader.readAsText(file,'UTF-8');
+  }
+}
+function processRows(rows){
+    const dataRows=rows[0]&&String(rows[0][0]).toLowerCase()==='deck'?rows.slice(1):rows;
     const valid=dataRows.filter(r=>r.length>=5&&r[2]&&r[3]&&r[4]);
     if(!valid.length){alert('유효한 데이터가 없어! 형식을 확인해줘');return;}
     const preview=document.getElementById('csv-preview');
@@ -807,8 +912,6 @@ function processCsvFile(file){
       <button onclick="importCsvData(this)" data-rows='${JSON.stringify(valid).replace(/'/g,"&#39;")}' style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-body);">
         ${valid.length}개 전체 추가하기
       </button>`;
-  };
-  reader.readAsText(file,'UTF-8');
 }
 async function importCsvData(btn){
   const rows=JSON.parse(btn.dataset.rows.replace(/&#39;/g,"'"));
@@ -818,7 +921,7 @@ async function importCsvData(btn){
   const deckCache={},setCache={};
   for(const r of rows){
     const deckName=r[0]?.trim(),setName=r[1]?.trim(),type=r[2]==='expr'?'expr':'sent';
-    const en=r[3],ko=r[4],example=r[5]||'',tag=r[6]||'기타';
+    const en=r[3],ko=r[4],example=r[5]||'',tag=r[6]||'기타',example_ko=r[7]||'';
     if(items.find(i=>i.en.toLowerCase()===en.toLowerCase())){skipped++;continue;}
     // 덱 처리
     let deckId=null,setId=null;
@@ -840,7 +943,7 @@ async function importCsvData(btn){
       }
       setId=setCache[cacheKey];
     }
-    const row=await insertItem({type,en,ko,example,tag});
+    const row=await insertItem({type,en,ko,example,example_ko,tag});
     if(row){if(setId) await addItemToSet(setId,row.id);added++;}
     btn.textContent=`추가 중... ${added+skipped}/${rows.length}`;
   }
@@ -873,9 +976,10 @@ function renderReview(){
       </div>
       <div class="card" style="margin-bottom:12px;">
         <div class="card-title">복습 모드 선택</div>
-        <div class="mode-select-row">
+        <div class="mode-select-row" style="grid-template-columns:1fr 1fr 1fr;">
           <button class="mode-btn" onclick="reviewType='ko-en';startReviewCards()">🇰🇷→🇺🇸<br><span style="font-size:11px;color:var(--text3);">한국어→영어</span></button>
           <button class="mode-btn" onclick="reviewType='blank';startReviewCards()">✏️ 빈칸<br><span style="font-size:11px;color:var(--text3);">빈칸 채우기</span></button>
+          <button class="mode-btn" onclick="reviewType='ko-example';startReviewCards()">📖 예시문장<br><span style="font-size:11px;color:var(--text3);">한국어→예시</span></button>
         </div>
       </div>`;
   } else {
@@ -905,7 +1009,15 @@ function nextCard(){
     ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
     <span style="font-size:11px;color:var(--text3);align-self:center;">${rCurrent.tag}</span>
   </div>`;
-  if(reviewType==='blank'&&rCurrent.example){
+  if(reviewType==='ko-example'){
+    if(!rCurrent.example_ko||!rCurrent.example){rDone++;nextCard();return;}
+    area.innerHTML=progressHtml+`
+      <div class="review-card">
+        <div class="rc-label">한국어 → 예시 문장</div>
+        <div class="rc-main">${rCurrent.example_ko}</div>
+      </div>
+      <button class="flip-btn" style="margin-top:10px;" onclick="flipCardExample()">정답 보기</button>`;
+  } else if(reviewType==='blank'&&rCurrent.example){
     // 빈칸 모드
     const words=rCurrent.en.split(' ');
     const keyWords=words.filter(w=>w.length>3);
@@ -981,6 +1093,31 @@ function flipCard(){
   </div>`;
 }
 
+function flipCardExample(){
+  const area=document.getElementById('review-area');
+  const total=rDone+rQueue.length+1;
+  const pct=Math.round((rDone/total)*100);
+  area.innerHTML=`<div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:5px;"><span>${rDone+1} / ${total}</span><span>${pct}%</span></div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:10px;">
+    ${rCurrent.type==='expr'?'<span class="type-pill type-expr">표현</span>':'<span class="type-pill type-sent">문장</span>'}
+  </div>
+  <div class="review-card">
+    <div class="rc-label">정답</div>
+    <div class="rc-answer-main">${rCurrent.example}</div>
+    <div class="rc-sub" style="margin-top:8px;">${rCurrent.en} — ${rCurrent.ko}</div>
+  </div>
+  <div style="margin-top:10px;">
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">얼마나 잘 기억했어?</div>
+    <div class="answer-row">
+      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 어려움<br><span style="font-size:10px;">다시 연습</span></button>
+      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 애매함<br><span style="font-size:10px;">곧 복습</span></button>
+      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 쉬움<br><span style="font-size:10px;">잘 알아요</span></button>
+    </div>
+  </div>`;}
+
 async function rateCard(r){
   const newLevel=r===0?Math.max(0,(rCurrent.level||0)-1):r===1?(rCurrent.level||0):Math.min(6,(rCurrent.level||0)+1);
   await updateItem(rCurrent.id,{level:newLevel,next_review:srsNext(newLevel)});
@@ -997,7 +1134,7 @@ function renderWords(tab){
   const list=document.getElementById('words-list');
   const filtered=tab==='all'?items:items.filter(i=>i.type===tab);
   if(!filtered.length){list.innerHTML='<div class="empty-state">아직 저장된 항목이 없어요</div>';return;}
-  list.innerHTML=filtered.map(renderItemRow).join('');
+  list.innerHTML=filtered.map(w=>renderItemRow(w,true)).join('');
 }
 
 // ── DECKS PAGE ────────────────────────────────────
@@ -1063,6 +1200,7 @@ function renderDeckDetail(){
       <div style="display:flex;gap:6px;">
         ${due>0?`<button class="action-btn" onclick="startDeckReview(${deck.id})">복습</button>`:''}
         <button class="ghost-btn" onclick="promptCreateSet(${deck.id})">+ 세트</button>
+        <button class="ghost-btn" onclick="downloadDeckXlsx(${deck.id})">📥 xlsx</button>
       </div>
     </div>
     ${deckSets.length===0
@@ -1105,7 +1243,10 @@ function renderSetDetail(){
         <div style="font-size:15px;font-weight:700;">📂 ${set.name}</div>
         <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;">${setItems.length}개 카드 ${due>0?`· 복습 ${due}개`:''}</div>
       </div>
-      ${due>0?`<button class="action-btn" onclick="startSetReview(${set.id})">복습 시작</button>`:'<div style="font-size:12px;color:var(--text3);">복습 없음</div>'}
+      <div style="display:flex;gap:6px;">
+        ${due>0?`<button class="action-btn" onclick="startSetReview(${set.id})">복습 시작</button>`:''}
+        <button class="ghost-btn" onclick="downloadSetXlsx(${set.id})">📥 xlsx</button>
+      </div>
     </div>
     <!-- 세트 카드 -->
     <div class="card" style="margin-bottom:10px;">
@@ -1177,6 +1318,35 @@ async function addToSet(setId,itemId){await addItemToSet(setId,itemId);renderSet
 async function removeFromSet(setId,itemId){await removeItemFromSet(setId,itemId);renderSetDetail();}
 function startSetReview(setId){reviewMode=setId;reviewType='ko-en';showPage('review');}
 function startDeckReview(deckId){reviewMode='deck:'+deckId;reviewType='ko-en';showPage('review');}
+function downloadDeckXlsx(deckId){
+  const deck=decks.find(d=>d.id===deckId);
+  if(!deck) return;
+  const rows=[['deck','set','type','en','ko','example','example_ko','tag']];
+  sets.filter(s=>s.deck_id===deckId).forEach(s=>{
+    getSetItems(s.id).forEach(item=>{
+      rows.push([deck.name,s.name,item.type,item.en,item.ko,item.example||'',item.example_ko||'',item.tag||'']);
+    });
+  });
+  if(rows.length===1){alert('덱에 카드가 없어요');return;}
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb,ws,deck.name.slice(0,31));
+  XLSX.writeFile(wb,deck.name+'.xlsx');
+}
+function downloadSetXlsx(setId){
+  const set=sets.find(s=>s.id===setId);
+  if(!set) return;
+  const deck=decks.find(d=>d.id===set.deck_id);
+  const rows=[['deck','set','type','en','ko','example','example_ko','tag']];
+  getSetItems(setId).forEach(item=>{
+    rows.push([deck?.name||'',set.name,item.type,item.en,item.ko,item.example||'',item.example_ko||'',item.tag||'']);
+  });
+  if(rows.length===1){alert('세트에 카드가 없어요');return;}
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb,ws,set.name.slice(0,31));
+  XLSX.writeFile(wb,set.name+'.xlsx');
+}
 
 // ── SW ────────────────────────────────────────────
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
