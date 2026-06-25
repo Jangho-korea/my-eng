@@ -1357,6 +1357,7 @@ function renderSetDetail(){
             <div style="flex:1;min-width:0;">
               <div class="item-en">${w.en}</div>
               <div class="item-ko">${w.ko}</div>
+              ${w.example ? `<div class="item-example">${w.example}</div>` : ''}
             </div>
             <button onclick="removeFromSet(${set.id},${w.id})" class="ghost-btn" style="font-size:11px;">Remove</button>
           </div>`).join('')
