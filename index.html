@@ -529,9 +529,20 @@ async function loadAll() {
   if(!r4.error) itemSets=r4.data||[];
   const sd=JSON.parse(localStorage.getItem('my_eng_streak_'+(currentUser?.id||''))||'{"streak":0,"lastStudyDate":null}');
   streak=sd.streak; lastStudyDate=sd.lastStudyDate;
+  const {data:{user:u}}=await sb.auth.getUser();
+  const cloudSession=u?.user_metadata?.savedReview;
+  if(cloudSession&&(cloudSession.queueIds?.length>0||cloudSession.currentId)){
+    savedReview=cloudSession;
+  } else {
+    const local=localStorage.getItem('my_eng_session');
+    if(local) try{savedReview=JSON.parse(local);}catch(e){}
+  }
   setSyncStatus('synced');
   updateHome(); renderApiSection(); populateAddSelects();
 }
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden') syncSessionToCloud(savedReview);
+});
 function saveStreakLocal(){
   localStorage.setItem('my_eng_streak_'+currentUser.id,JSON.stringify({streak,lastStudyDate}));
 }
@@ -1013,6 +1024,15 @@ async function importCsvData(btn){
 let rQueue=[],rCurrent=null,rDone=0,reviewMode='all',reviewType='ko-en',reviewTag='all';
 let savedReview=null;
 
+function persistSession(s){
+  if(s) localStorage.setItem('my_eng_session',JSON.stringify(s));
+  else   localStorage.removeItem('my_eng_session');
+}
+async function syncSessionToCloud(s){
+  if(!sb||!currentUser) return;
+  await sb.auth.updateUser({data:{savedReview:s||null}});
+}
+
 function renderReview(){
   const area=document.getElementById('review-area');
   if(savedReview&&(savedReview.queueIds.length>0||savedReview.currentId)){
@@ -1027,7 +1047,7 @@ function renderReview(){
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">
           <button class="action-btn" style="width:100%;padding:13px;font-size:14px;" onclick="resumeReview()">↩ Continue where I left off</button>
-          <button class="ghost-btn" style="width:100%;padding:12px;font-size:13px;" onclick="savedReview=null;renderReview()">🔄 Start from the beginning</button>
+          <button class="ghost-btn" style="width:100%;padding:12px;font-size:13px;" onclick="savedReview=null;persistSession(null);syncSessionToCloud(null);renderReview()">🔄 Start from the beginning</button>
         </div>
       </div>`;
     return;
@@ -1063,7 +1083,7 @@ function resumeReview(){
   reviewMode=savedReview.mode; reviewType=savedReview.type; reviewTag=savedReview.tag; rDone=savedReview.done;
   rQueue=savedReview.queueIds.map(id=>items.find(i=>i.id===id)).filter(Boolean);
   if(savedReview.currentId){const c=items.find(i=>i.id===savedReview.currentId);if(c) rQueue.unshift(c);}
-  savedReview=null;
+  savedReview=null; persistSession(null); syncSessionToCloud(null);
   nextCard();
 }
 
@@ -1088,7 +1108,7 @@ function nextCard(){
   const area=document.getElementById('review-area');
   if(!rQueue.length){
     if(rDone>0) updateStreak();
-    savedReview=null;
+    savedReview=null; persistSession(null); syncSessionToCloud(null);
     area.innerHTML=rDone===0
       ?`<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">All done for today!</div><div class="done-sub">You've reviewed all cards<br>See you tomorrow!</div></div>`
       :`<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone} cards reviewed!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak} day streak</div></div>`;
@@ -1096,6 +1116,7 @@ function nextCard(){
   }
   rCurrent=rQueue.shift();
   savedReview={queueIds:rQueue.map(i=>i.id),currentId:rCurrent.id,done:rDone,mode:reviewMode,type:reviewType,tag:reviewTag};
+  persistSession(savedReview);
   const total=rDone+rQueue.length+1;
   const pct=Math.round((rDone/total)*100);
   const progressHtml=`<div style="margin-bottom:10px;">
