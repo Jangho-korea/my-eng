@@ -418,8 +418,15 @@ function today() { return new Date().toISOString().split('T')[0]; }
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 
 const REVIEW_HIST_SK='my_eng_review_hist';
+const DAILY_POOLS_SK='my_eng_daily_pools';
 let reviewHistory={};
 function loadReviewHistory(){try{reviewHistory=JSON.parse(localStorage.getItem(REVIEW_HIST_SK)||'{}');}catch(e){reviewHistory={};}}
+function getDailyPoolData(){
+  const t=today();
+  try{const d=JSON.parse(localStorage.getItem(DAILY_POOLS_SK));if(d?.date===t)return d;}catch(e){}
+  return {date:today(),pools:{},done:{}};
+}
+function saveDailyPoolData(d){localStorage.setItem(DAILY_POOLS_SK,JSON.stringify(d));}
 function recordReview(){
   const t=today();reviewHistory[t]=(reviewHistory[t]||0)+1;
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);
@@ -1086,6 +1093,13 @@ function startReviewCards(){
     else pool=getSetItems(Number(reviewMode)).filter(w=>!w.next_review||w.next_review<=t);
   }
   if(reviewTag!=='all') pool=pool.filter(w=>w.tag===reviewTag);
+  if(reviewType!=='focus'){
+    const pd=getDailyPoolData();
+    const key=reviewMode+'_'+reviewType+'_'+(reviewTag||'all');
+    if(!pd.pools[key]){pd.pools[key]=pool.map(i=>i.id);pd.done[key]=[];saveDailyPoolData(pd);}
+    const done=new Set(pd.done[key]||[]);
+    pool=(pd.pools[key]||[]).map(id=>items.find(i=>i.id===id)).filter(Boolean).filter(i=>!done.has(i.id));
+  }
   rQueue=shuffle([...pool]);rDone=0;
   nextCard();
 }
@@ -1227,6 +1241,12 @@ async function rateCard(r){
   const newLevel=r===0?Math.max(0,lvl-1):r===1?Math.min(6,lvl+1):Math.min(6,lvl+2);
   await updateItem(rCurrent.id,{level:newLevel,next_review:srsNext(newLevel)});
   recordReview();
+  if(reviewType!=='focus'){
+    const pd=getDailyPoolData();
+    const key=reviewMode+'_'+reviewType+'_'+(reviewTag||'all');
+    if(!pd.done[key])pd.done[key]=[];
+    if(!pd.done[key].includes(rCurrent.id)){pd.done[key].push(rCurrent.id);saveDailyPoolData(pd);}
+  }
   rDone++;nextCard();
 }
 
