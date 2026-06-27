@@ -36,7 +36,8 @@ const SUPABASE_KEY = 'sb_publishable_...';
 ```
 
 **Tables:**
-- `items` — vocabulary cards: `{id, user_id, type ('expr'|'sent'), en, ko, example, example_ko, tag, level (0-6), next_review (date), added_at}`
+- `items` — vocabulary cards: `{id, user_id, type ('expr'|'sent'), en, ko, example, example_ko, tag, level (0-6), next_review (date), added_at, srs (jsonb)}`
+  - `srs` holds **independent SRS state per review mode**: `{ "ko-en": {level, next_review}, "blank": {...}, "ko-example": {...} }`. Top-level `level`/`next_review` are a denormalized "overall" mirror (max level, earliest due across modes) kept only so home/deck/set due-counts and the stats distribution keep working.
 - `decks` — `{id, user_id, name}`
 - `sets` — `{id, user_id, deck_id, name}`
 - `item_sets` — join table `{user_id, set_id, item_id}`
@@ -55,7 +56,13 @@ All DB functions (`insertItem`, `updateItem`, `deleteItemDB`, `createDeck`, `del
 
 ### SRS system
 
-Cards have `level` (0–6) and `next_review` (ISO date string).
+Each card carries **per-mode SRS state** in `srs` (jsonb), keyed by review type
+(`ko-en`, `blank`, `ko-example`) — `{level (0–6), next_review (ISO date)}` each.
+A card is "due today" *within a mode* independently, so finishing one mode never
+marks another mode done. `modeSrs(item, type)` reads a track (falling back to the
+legacy top-level fields for un-migrated cards); `isModeDue`/`isAnyDue` test due-ness.
+Focus mode operates on (and rates) the `ko-en` track. `rateCard` advances only the
+active mode's track, then recomputes the denormalized top-level `level`/`next_review`.
 
 ```js
 // Intervals per level (days):

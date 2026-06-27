@@ -418,15 +418,8 @@ function today() { const d=new Date(); return d.getFullYear()+'-'+String(d.getMo
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 
 const REVIEW_HIST_SK='my_eng_review_hist';
-const DAILY_POOLS_SK='my_eng_daily_pools';
 let reviewHistory={};
 function loadReviewHistory(){try{reviewHistory=JSON.parse(localStorage.getItem(REVIEW_HIST_SK)||'{}');}catch(e){reviewHistory={};}}
-function getDailyPoolData(){
-  const t=today();
-  try{const d=JSON.parse(localStorage.getItem(DAILY_POOLS_SK));if(d?.date===t)return d;}catch(e){}
-  return {date:today(),pools:{},done:{}};
-}
-function saveDailyPoolData(d){localStorage.setItem(DAILY_POOLS_SK,JSON.stringify(d));}
 function recordReview(){
   const t=today();reviewHistory[t]=(reviewHistory[t]||0)+1;
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);
@@ -471,7 +464,21 @@ function srsHint(lvl, r) {
   const d=days[Math.min(newLvl,days.length-1)];
   return d===1?'1 day':d+' days';
 }
-function dueItems() { const t=today(); return items.filter(w=>!w.next_review||w.next_review<=t); }
+// Per-mode SRS: each card tracks an independent {level,next_review} per review
+// type, stored in the `srs` jsonb column. Legacy top-level level/next_review are
+// kept as a denormalized "overall" mirror (max level, earliest due) so the home,
+// deck/set due counts and stats keep working unchanged.
+const SRS_MODES=['ko-en','blank','ko-example'];
+function modeSrs(item,type){
+  const s=item.srs&&item.srs[type];
+  if(s&&typeof s.level==='number') return {level:s.level,next_review:s.next_review||null};
+  return {level:item.level||0,next_review:item.next_review||null}; // fallback for un-migrated cards
+}
+function isModeDue(item,type,t){const s=modeSrs(item,type);return !s.next_review||s.next_review<=t;}
+function isAnyDue(item,t){return SRS_MODES.some(m=>isModeDue(item,m,t));}
+function curModeLevel(){return modeSrs(rCurrent,reviewType==='focus'?'ko-en':reviewType).level;}
+function newSrsSeed(){const t=today();const o={};SRS_MODES.forEach(m=>o[m]={level:0,next_review:t});return o;}
+function dueItems() { const t=today(); return items.filter(w=>isAnyDue(w,t)); }
 function setSyncStatus(s) {
   const el=document.getElementById('sync-indicator'); if(!el) return;
   if(s==='syncing'){el.textContent='Syncing...';el.className='sync-indicator syncing';}
@@ -541,14 +548,13 @@ async function loadAll() {
   const sd=JSON.parse(localStorage.getItem('my_eng_streak_'+(currentUser?.id||''))||'{"streak":0,"lastStudyDate":null}');
   streak=sd.streak; lastStudyDate=sd.lastStudyDate;
   const histStreak=computeCurrentStreakFromHistory();
-  if(histStreak>streak){streak=histStreak;saveStreakLocal();}
-  // Migrate old daily pool data that was written before allDoneToday existed
-  const pd=getDailyPoolData();
-  if(pd.done&&Object.keys(pd.done).length>0&&!pd.allDoneToday){
-    const merged=new Set();
-    Object.values(pd.done).forEach(ids=>ids.forEach(id=>merged.add(id)));
-    pd.allDoneToday=[...merged];
-    saveDailyPoolData(pd);
+  if(histStreak>streak){
+    streak=histStreak;
+    // Keep lastStudyDate consistent with the recovered streak so the next
+    // updateStreak() doesn't misjudge continuity.
+    const hd=Object.keys(reviewHistory).filter(d=>reviewHistory[d]>0).sort();
+    if(hd.length) lastStudyDate=hd[hd.length-1];
+    saveStreakLocal();
   }
   const {data:{user:u}}=await sb.auth.getUser();
   const cloudSession=u?.user_metadata?.savedReview;
@@ -572,7 +578,7 @@ async function insertItem(data){
   setSyncStatus('syncing');
   const {data:row,error}=await sb.from('items').insert({
     user_id:currentUser.id,type:data.type,en:data.en,ko:data.ko,
-    example:data.example||'',example_ko:data.example_ko||'',tag:data.tag||'Other',level:0,next_review:today(),added_at:today()
+    example:data.example||'',example_ko:data.example_ko||'',tag:data.tag||'Other',level:0,next_review:today(),added_at:today(),srs:newSrsSeed()
   }).select().single();
   if(!error&&row){items.unshift(row);setSyncStatus('synced');return row;}
   setSyncStatus(''); return null;
@@ -632,9 +638,10 @@ function getDeckItems(deckId){
 }
 function updateStreak(){
   const t=today(); if(lastStudyDate===t) return;
-  const y=new Date(); y.setDate(y.getDate()-1);
-  const ys=y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
-  streak=lastStudyDate===ys?streak+1:1; lastStudyDate=t; saveStreakLocal();
+  // recordReview() has already logged today's review, so reviewHistory is the
+  // single source of truth. Deriving the streak from it avoids the reset-to-1
+  // bug that happened when lastStudyDate was stale/null after a load-time recovery.
+  streak=computeCurrentStreakFromHistory(); lastStudyDate=t; saveStreakLocal();
 }
 
 // ── NAV ───────────────────────────────────────────
@@ -1107,37 +1114,22 @@ function resumeReview(){
   nextCard();
 }
 
-function isInReviewScope(id){
-  if(reviewMode==='all') return true;
-  if(typeof reviewMode==='string'&&reviewMode.startsWith('deck:')) return getDeckItems(Number(reviewMode.split(':')[1])).some(x=>x.id===id);
-  return getSetItems(Number(reviewMode)).some(x=>x.id===id);
-}
 function startReviewCards(){
   const t=today();
+  // Resolve candidate cards for the current scope (all / deck / set)
+  let scope;
+  if(reviewMode==='all') scope=items;
+  else if(typeof reviewMode==='string'&&reviewMode.startsWith('deck:')) scope=getDeckItems(Number(reviewMode.split(':')[1]));
+  else scope=getSetItems(Number(reviewMode));
   let pool;
   if(reviewType==='focus'){
-    if(reviewMode==='all') pool=items.filter(w=>(w.level||0)<=1);
-    else if(typeof reviewMode==='string'&&reviewMode.startsWith('deck:')) pool=getDeckItems(Number(reviewMode.split(':')[1])).filter(w=>(w.level||0)<=1);
-    else pool=getSetItems(Number(reviewMode)).filter(w=>(w.level||0)<=1);
+    pool=scope.filter(w=>modeSrs(w,'ko-en').level<=1); // weak cards on the KO→EN track
   } else {
-    if(reviewMode==='all') pool=items.filter(w=>!w.next_review||w.next_review<=t);
-    else if(typeof reviewMode==='string'&&reviewMode.startsWith('deck:')) pool=getDeckItems(Number(reviewMode.split(':')[1])).filter(w=>!w.next_review||w.next_review<=t);
-    else pool=getSetItems(Number(reviewMode)).filter(w=>!w.next_review||w.next_review<=t);
+    // Each mode keeps its own next_review, so completing a card in one mode does
+    // not mark it done in another — the modes are fully independent.
+    pool=scope.filter(w=>isModeDue(w,reviewType,t));
   }
   if(reviewTag!=='all') pool=pool.filter(w=>w.tag===reviewTag);
-  if(reviewType!=='focus'){
-    const pd=getDailyPoolData();
-    const key=reviewMode+'_'+reviewType+'_'+(reviewTag||'all');
-    // Add back cards reviewed today in other modes (their next_review was already advanced)
-    (pd.allDoneToday||[]).forEach(id=>{
-      if(!pool.find(i=>i.id===id)){
-        const w=items.find(i=>i.id===id);
-        if(w&&(reviewTag==='all'||w.tag===reviewTag)&&isInReviewScope(id)) pool.push(w);
-      }
-    });
-    const done=new Set(pd.done[key]||[]);
-    pool=pool.filter(i=>!done.has(i.id));
-  }
   rQueue=shuffle([...pool]);rDone=0;
   nextCard();
 }
@@ -1216,9 +1208,9 @@ function showRatingButtons(){
   <div style="margin-top:10px;">
     <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
     <div class="answer-row">
-      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">${srsHint(rCurrent.level||0,0)}</span></button>
-      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">${srsHint(rCurrent.level||0,1)}</span></button>
-      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">${srsHint(rCurrent.level||0,2)}</span></button>
+      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">${srsHint(curModeLevel(),0)}</span></button>
+      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">${srsHint(curModeLevel(),1)}</span></button>
+      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">${srsHint(curModeLevel(),2)}</span></button>
     </div>
   </div>`;
 }
@@ -1242,9 +1234,9 @@ function flipCard(){
   <div style="margin-top:10px;">
     <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
     <div class="answer-row">
-      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">${srsHint(rCurrent.level||0,0)}</span></button>
-      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">${srsHint(rCurrent.level||0,1)}</span></button>
-      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">${srsHint(rCurrent.level||0,2)}</span></button>
+      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">${srsHint(curModeLevel(),0)}</span></button>
+      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">${srsHint(curModeLevel(),1)}</span></button>
+      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">${srsHint(curModeLevel(),2)}</span></button>
     </div>
   </div>`;
 }
@@ -1268,26 +1260,24 @@ function flipCardExample(){
   <div style="margin-top:10px;">
     <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
     <div class="answer-row">
-      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">${srsHint(rCurrent.level||0,0)}</span></button>
-      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">${srsHint(rCurrent.level||0,1)}</span></button>
-      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">${srsHint(rCurrent.level||0,2)}</span></button>
+      <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">${srsHint(curModeLevel(),0)}</span></button>
+      <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">${srsHint(curModeLevel(),1)}</span></button>
+      <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">${srsHint(curModeLevel(),2)}</span></button>
     </div>
   </div>`;}
 
 async function rateCard(r){
-  const lvl=rCurrent.level||0;
+  const type=reviewType==='focus'?'ko-en':reviewType; // focus rates the KO→EN track
+  const lvl=modeSrs(rCurrent,type).level;
   const newLevel=r===0?Math.max(0,lvl-1):r===1?Math.min(6,lvl+1):Math.min(6,lvl+2);
-  await updateItem(rCurrent.id,{level:newLevel,next_review:srsNext(newLevel)});
+  const srs=Object.assign({},rCurrent.srs||{});
+  SRS_MODES.forEach(m=>{if(!srs[m])srs[m]=modeSrs(rCurrent,m);}); // backfill tracks for pre-srs cards
+  srs[type]={level:newLevel,next_review:srsNext(newLevel)};
+  // denormalized overall mirror so due-counts/stats keep working: furthest level, earliest due
+  let maxLvl=0,minNext=null;
+  SRS_MODES.forEach(m=>{const s=srs[m];if(s.level>maxLvl)maxLvl=s.level;if(s.next_review&&(!minNext||s.next_review<minNext))minNext=s.next_review;});
+  await updateItem(rCurrent.id,{srs,level:maxLvl,next_review:minNext});
   recordReview();
-  if(reviewType!=='focus'){
-    const pd=getDailyPoolData();
-    const key=reviewMode+'_'+reviewType+'_'+(reviewTag||'all');
-    if(!pd.done[key])pd.done[key]=[];
-    if(!pd.done[key].includes(rCurrent.id))pd.done[key].push(rCurrent.id);
-    if(!pd.allDoneToday)pd.allDoneToday=[];
-    if(!pd.allDoneToday.includes(rCurrent.id))pd.allDoneToday.push(rCurrent.id);
-    saveDailyPoolData(pd);
-  }
   rDone++;nextCard();
 }
 
