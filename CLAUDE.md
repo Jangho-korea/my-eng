@@ -51,8 +51,8 @@ All DB functions (`insertItem`, `updateItem`, `deleteItemDB`, `createDeck`, `del
 
 **localStorage keys:**
 - `my_eng_apikey` / `my_eng_provider` — translation API key & provider
-- `my_eng_streak_{userId}` — `{streak, lastStudyDate}`
-- `my_eng_review_hist` — `{date: count}` review history (90-day rolling window)
+- `my_eng_streak_{userId}` — `{streak, lastStudyDate}` (also mirrored to Supabase `user_metadata.streakData` for cross-device sync)
+- `my_eng_review_hist` — `{date: count}` review history, 90-day rolling window (also mirrored to `user_metadata.reviewHist`; `loadAll` merges the cloud copy on login via `mergeReviewHistory`)
 
 ### SRS system
 
@@ -106,6 +106,6 @@ Uses SheetJS (`xlsx`). Import expects columns: `type`, `en`, `ko`, `example`, `e
 
 - **Rendering**: All pages render by setting `innerHTML` of a container element. No virtual DOM or templating library.
 - **Escaping**: `esc(s)` for JS string contexts (inside `onclick="..."` attributes), `escHtml(s)` for HTML content.
-- **Streak**: Computed locally in localStorage, not in Supabase. `updateStreak()` is called when a review session ends.
+- **Streak**: Derived from `reviewHistory` via `computeCurrentStreakFromHistory()` (not a stored counter). `updateStreak()` runs when a review session ends. Both the history and streak are synced to Supabase `user_metadata` (`syncReviewDataToCloud`) so they survive across devices.
 - **Tags**: Default tags are Work, Daily, Business, Idiom, Phrasal verb, Other. The `tag` field is a free-form string.
 - **Level pill display**: level 0 = "NEW" (blue), level 1–3 = "Lv.N" (yellow), level 4+ = "✓" (green).

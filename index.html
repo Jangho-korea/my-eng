@@ -420,6 +420,17 @@ function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.ra
 const REVIEW_HIST_SK='my_eng_review_hist';
 let reviewHistory={};
 function loadReviewHistory(){try{reviewHistory=JSON.parse(localStorage.getItem(REVIEW_HIST_SK)||'{}');}catch(e){reviewHistory={};}}
+// Cross-device sync: review history + streak live in Supabase user_metadata
+// (same mechanism as savedReview) so they're consistent across devices instead
+// of being trapped in per-device localStorage.
+function mergeReviewHistory(cloud){
+  if(!cloud||typeof cloud!=='object') return;
+  Object.keys(cloud).forEach(d=>{reviewHistory[d]=Math.max(reviewHistory[d]||0,cloud[d]||0);});
+}
+async function syncReviewDataToCloud(){
+  if(!sb||!currentUser) return;
+  try{await sb.auth.updateUser({data:{reviewHist:reviewHistory,streakData:{streak,lastStudyDate}}});}catch(e){}
+}
 function recordReview(){
   const t=today();reviewHistory[t]=(reviewHistory[t]||0)+1;
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);
@@ -545,8 +556,15 @@ async function loadAll() {
   if(!r2.error) decks=r2.data||[];
   if(!r3.error) sets=r3.data||[];
   if(!r4.error) itemSets=r4.data||[];
+  const {data:{user:u}}=await sb.auth.getUser();
+  // Merge cloud-synced review history so a streak built on another device is
+  // not lost; then persist the union locally and back to the cloud.
+  mergeReviewHistory(u?.user_metadata?.reviewHist);
+  localStorage.setItem(REVIEW_HIST_SK,JSON.stringify(reviewHistory));
   const sd=JSON.parse(localStorage.getItem('my_eng_streak_'+(currentUser?.id||''))||'{"streak":0,"lastStudyDate":null}');
-  streak=sd.streak; lastStudyDate=sd.lastStudyDate;
+  const cloudStreak=u?.user_metadata?.streakData;
+  streak=Math.max(sd.streak||0,cloudStreak?.streak||0);
+  lastStudyDate=sd.lastStudyDate||cloudStreak?.lastStudyDate||null;
   const histStreak=computeCurrentStreakFromHistory();
   if(histStreak>streak){
     streak=histStreak;
@@ -554,9 +572,9 @@ async function loadAll() {
     // updateStreak() doesn't misjudge continuity.
     const hd=Object.keys(reviewHistory).filter(d=>reviewHistory[d]>0).sort();
     if(hd.length) lastStudyDate=hd[hd.length-1];
-    saveStreakLocal();
   }
-  const {data:{user:u}}=await sb.auth.getUser();
+  saveStreakLocal();
+  syncReviewDataToCloud();
   const cloudSession=u?.user_metadata?.savedReview;
   if(cloudSession&&(cloudSession.queueIds?.length>0||cloudSession.currentId)){
     savedReview=cloudSession;
@@ -568,7 +586,7 @@ async function loadAll() {
   updateHome(); renderApiSection(); populateAddSelects();
 }
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='hidden') syncSessionToCloud(savedReview);
+  if(document.visibilityState==='hidden'){ syncSessionToCloud(savedReview); syncReviewDataToCloud(); }
 });
 function saveStreakLocal(){
   localStorage.setItem('my_eng_streak_'+currentUser.id,JSON.stringify({streak,lastStudyDate}));
@@ -642,6 +660,7 @@ function updateStreak(){
   // single source of truth. Deriving the streak from it avoids the reset-to-1
   // bug that happened when lastStudyDate was stale/null after a load-time recovery.
   streak=computeCurrentStreakFromHistory(); lastStudyDate=t; saveStreakLocal();
+  syncReviewDataToCloud();
 }
 
 // ── NAV ───────────────────────────────────────────
