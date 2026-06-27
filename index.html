@@ -1097,6 +1097,11 @@ function resumeReview(){
   nextCard();
 }
 
+function isInReviewScope(id){
+  if(reviewMode==='all') return true;
+  if(typeof reviewMode==='string'&&reviewMode.startsWith('deck:')) return getDeckItems(Number(reviewMode.split(':')[1])).some(x=>x.id===id);
+  return getSetItems(Number(reviewMode)).some(x=>x.id===id);
+}
 function startReviewCards(){
   const t=today();
   let pool;
@@ -1113,9 +1118,15 @@ function startReviewCards(){
   if(reviewType!=='focus'){
     const pd=getDailyPoolData();
     const key=reviewMode+'_'+reviewType+'_'+(reviewTag||'all');
-    if(!pd.pools[key]){pd.pools[key]=pool.map(i=>i.id);pd.done[key]=[];saveDailyPoolData(pd);}
+    // Add back cards reviewed today in other modes (their next_review was already advanced)
+    (pd.allDoneToday||[]).forEach(id=>{
+      if(!pool.find(i=>i.id===id)){
+        const w=items.find(i=>i.id===id);
+        if(w&&(reviewTag==='all'||w.tag===reviewTag)&&isInReviewScope(id)) pool.push(w);
+      }
+    });
     const done=new Set(pd.done[key]||[]);
-    pool=(pd.pools[key]||[]).map(id=>items.find(i=>i.id===id)).filter(Boolean).filter(i=>!done.has(i.id));
+    pool=pool.filter(i=>!done.has(i.id));
   }
   rQueue=shuffle([...pool]);rDone=0;
   nextCard();
@@ -1262,7 +1273,10 @@ async function rateCard(r){
     const pd=getDailyPoolData();
     const key=reviewMode+'_'+reviewType+'_'+(reviewTag||'all');
     if(!pd.done[key])pd.done[key]=[];
-    if(!pd.done[key].includes(rCurrent.id)){pd.done[key].push(rCurrent.id);saveDailyPoolData(pd);}
+    if(!pd.done[key].includes(rCurrent.id))pd.done[key].push(rCurrent.id);
+    if(!pd.allDoneToday)pd.allDoneToday=[];
+    if(!pd.allDoneToday.includes(rCurrent.id))pd.allDoneToday.push(rCurrent.id);
+    saveDailyPoolData(pd);
   }
   rDone++;nextCard();
 }
