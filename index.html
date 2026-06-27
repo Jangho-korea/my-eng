@@ -859,8 +859,8 @@ async function deleteItem(id){
   if(editingId===id) editingId=null;
   await deleteItemDB(id); updateHome();
 }
-function editItem(id){editingId=id;}
-function cancelEdit(){editingId=null;}
+function editItem(id){editingId=id;renderDecksPage();}
+function cancelEdit(){editingId=null;renderDecksPage();}
 async function saveEdit(id){
   const en=document.getElementById('edit-en-'+id).value.trim();
   const ko=document.getElementById('edit-ko-'+id).value.trim();
@@ -868,7 +868,7 @@ async function saveEdit(id){
   const example_ko=document.getElementById('edit-example-ko-'+id).value.trim();
   if(!en||!ko){alert('English expression and Korean meaning are required.');return;}
   await updateItem(id,{en,ko,example,example_ko});
-  editingId=null;updateHome();
+  editingId=null;renderDecksPage();updateHome();
 }
 async function editAutoTranslate(id,btn){
   const exText=document.getElementById('edit-example-'+id).value.trim();
@@ -1346,14 +1346,31 @@ function renderSetDetail(){
       <div class="card-title">Cards (${setItems.length})</div>
       ${setItems.length===0
         ?'<div class="empty-state" style="padding:16px;">No cards yet</div>'
-        :setItems.map(w=>`
+        :setItems.map(w=>editingId===w.id?`
+          <div class="item-row" style="flex-direction:column;align-items:stretch;gap:8px;padding:14px 0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:10px;color:var(--text3);font-family:var(--font-mono);">Editing</span>
+              <button onclick="cancelEdit()" class="ghost-btn" style="font-size:11px;">Cancel</button>
+            </div>
+            <input type="text" id="edit-en-${w.id}" value="${escHtml(w.en)}" placeholder="English expression" />
+            <input type="text" id="edit-ko-${w.id}" value="${escHtml(w.ko)}" placeholder="Korean meaning" />
+            <input type="text" id="edit-example-${w.id}" value="${escHtml(w.example||'')}" placeholder="Example sentence" />
+            <div style="display:flex;gap:8px;">
+              <input type="text" id="edit-example-ko-${w.id}" value="${escHtml(w.example_ko||'')}" placeholder="Korean translation" style="flex:1;" />
+              <button type="button" onclick="editAutoTranslate(${w.id},this)" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 12px;font-size:12px;cursor:pointer;font-family:var(--font-body);white-space:nowrap;font-weight:700;">✨ Auto</button>
+            </div>
+            <button onclick="saveEdit(${w.id})" class="action-btn" style="width:100%;padding:11px;font-size:13px;">Save</button>
+          </div>`:`
           <div class="item-row">
             <div style="flex:1;min-width:0;">
               <div class="item-en">${w.en}</div>
               <div class="item-ko">${w.ko}</div>
               ${w.example ? `<div class="item-example">${w.example}</div>` : ''}
             </div>
-            <button onclick="removeFromSet(${set.id},${w.id})" class="ghost-btn" style="font-size:11px;">Remove</button>
+            <div style="display:flex;gap:4px;flex-shrink:0;">
+              <button class="ghost-btn" style="font-size:11px;padding:4px 8px;" onclick="editItem(${w.id})">Edit</button>
+              <button onclick="removeFromSet(${set.id},${w.id})" class="ghost-btn" style="font-size:11px;">Remove</button>
+            </div>
           </div>`).join('')
       }
     </div>
