@@ -439,12 +439,14 @@ function computeCurrentStreakFromHistory(){
   const dates=Object.keys(reviewHistory).filter(d=>reviewHistory[d]>0).sort();
   if(!dates.length) return 0;
   const last=dates[dates.length-1];
+  // Allow up to 2-day gap: UTC dates stored before the local-date fix may be
+  // one day behind local dates (UTC+9 reviews before 9am appear as prior UTC day)
   const dayDiff=(new Date(t)-new Date(last))/86400000;
-  if(dayDiff>1) return 0;
+  if(dayDiff>2) return 0;
   let count=1;
   for(let i=dates.length-2;i>=0;i--){
-    const gap=(new Date(dates[i+1])-new Date(dates[i]))/86400000;
-    if(Math.round(gap)===1) count++;
+    const gap=Math.round((new Date(dates[i+1])-new Date(dates[i]))/86400000);
+    if(gap<=2) count++;
     else break;
   }
   return count;
@@ -540,6 +542,14 @@ async function loadAll() {
   streak=sd.streak; lastStudyDate=sd.lastStudyDate;
   const histStreak=computeCurrentStreakFromHistory();
   if(histStreak>streak){streak=histStreak;saveStreakLocal();}
+  // Migrate old daily pool data that was written before allDoneToday existed
+  const pd=getDailyPoolData();
+  if(pd.done&&Object.keys(pd.done).length>0&&!pd.allDoneToday){
+    const merged=new Set();
+    Object.values(pd.done).forEach(ids=>ids.forEach(id=>merged.add(id)));
+    pd.allDoneToday=[...merged];
+    saveDailyPoolData(pd);
+  }
   const {data:{user:u}}=await sb.auth.getUser();
   const cloudSession=u?.user_metadata?.savedReview;
   if(cloudSession&&(cloudSession.queueIds?.length>0||cloudSession.currentId)){
