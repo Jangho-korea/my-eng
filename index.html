@@ -434,6 +434,21 @@ function recordReview(){
   Object.keys(reviewHistory).forEach(d=>{if(d<cutStr)delete reviewHistory[d];});
   localStorage.setItem(REVIEW_HIST_SK,JSON.stringify(reviewHistory));
 }
+function computeCurrentStreakFromHistory(){
+  const t=today();
+  const dates=Object.keys(reviewHistory).filter(d=>reviewHistory[d]>0).sort();
+  if(!dates.length) return 0;
+  const last=dates[dates.length-1];
+  const dayDiff=(new Date(t)-new Date(last))/86400000;
+  if(dayDiff>1) return 0;
+  let count=1;
+  for(let i=dates.length-2;i>=0;i--){
+    const gap=(new Date(dates[i+1])-new Date(dates[i]))/86400000;
+    if(Math.round(gap)===1) count++;
+    else break;
+  }
+  return count;
+}
 function computeBestStreak(){
   const dates=Object.keys(reviewHistory).filter(d=>reviewHistory[d]>0).sort();
   let best=0,cur=0;
@@ -523,6 +538,8 @@ async function loadAll() {
   if(!r4.error) itemSets=r4.data||[];
   const sd=JSON.parse(localStorage.getItem('my_eng_streak_'+(currentUser?.id||''))||'{"streak":0,"lastStudyDate":null}');
   streak=sd.streak; lastStudyDate=sd.lastStudyDate;
+  const histStreak=computeCurrentStreakFromHistory();
+  if(histStreak>streak){streak=histStreak;saveStreakLocal();}
   const {data:{user:u}}=await sb.auth.getUser();
   const cloudSession=u?.user_metadata?.savedReview;
   if(cloudSession&&(cloudSession.queueIds?.length>0||cloudSession.currentId)){
