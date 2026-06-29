@@ -139,8 +139,9 @@
     .rc-answer-main { font-family:var(--font-mono); font-size:20px; color:var(--accent); line-height:1.4; margin-bottom:8px; position:relative; }
     .rc-answer-example { font-size:12px; color:var(--text2); font-style:italic; line-height:1.6; position:relative; }
     .flip-btn { width:100%; background:var(--surface); border:1px solid var(--border2); color:var(--text2); border-radius:var(--r); padding:11px; font-size:13px; cursor:pointer; font-family:var(--font-body); box-shadow:var(--shadow); }
-    .answer-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .answer-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
     .ans-btn { padding:11px 6px; border-radius:var(--r); border:1px solid; font-size:12px; cursor:pointer; font-family:var(--font-body); line-height:1.4; }
+    .ans-again { background:#e5e7eb; border-color:#cbd5e1; color:#64748b; }
     .ans-hard { background:#fee2e2; border-color:#fca5a5; color:var(--red); }
     .ans-ok { background:#fef3c7; border-color:#fcd34d; color:var(--yellow); }
     .ans-easy { background:#d1fae5; border-color:#6ee7b7; color:var(--green); }
@@ -1229,6 +1230,7 @@ function showRatingButtons(){
   <div style="margin-top:10px;">
     <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
     <div class="answer-row">
+      <button class="ans-btn ans-again" onclick="rateCard(-1)">🔁 Again<br><span style="font-size:10px;">soon</span></button>
       <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">${srsHint(curModeLevel(),0)}</span></button>
       <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">${srsHint(curModeLevel(),1)}</span></button>
       <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">${srsHint(curModeLevel(),2)}</span></button>
@@ -1255,6 +1257,7 @@ function flipCard(){
   <div style="margin-top:10px;">
     <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
     <div class="answer-row">
+      <button class="ans-btn ans-again" onclick="rateCard(-1)">🔁 Again<br><span style="font-size:10px;">soon</span></button>
       <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">${srsHint(curModeLevel(),0)}</span></button>
       <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">${srsHint(curModeLevel(),1)}</span></button>
       <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">${srsHint(curModeLevel(),2)}</span></button>
@@ -1281,6 +1284,7 @@ function flipCardExample(){
   <div style="margin-top:10px;">
     <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;font-family:var(--font-mono);">How well did you remember?</div>
     <div class="answer-row">
+      <button class="ans-btn ans-again" onclick="rateCard(-1)">🔁 Again<br><span style="font-size:10px;">soon</span></button>
       <button class="ans-btn ans-hard" onclick="rateCard(0)">😓 Hard<br><span style="font-size:10px;">${srsHint(curModeLevel(),0)}</span></button>
       <button class="ans-btn ans-ok" onclick="rateCard(1)">🤔 Okay<br><span style="font-size:10px;">${srsHint(curModeLevel(),1)}</span></button>
       <button class="ans-btn ans-easy" onclick="rateCard(2)">😊 Easy<br><span style="font-size:10px;">${srsHint(curModeLevel(),2)}</span></button>
@@ -1290,7 +1294,8 @@ function flipCardExample(){
 async function rateCard(r){
   const type=reviewType==='focus'?'ko-en':reviewType; // focus rates the KO→EN track
   const lvl=modeSrs(rCurrent,type).level;
-  const newLevel=r===0?Math.max(0,lvl-1):r===1?Math.min(6,lvl+1):Math.min(6,lvl+2);
+  // r=-1 Again (reset to 0), 0 Hard (-1), 1 Okay (+1), 2 Easy (+2)
+  const newLevel=r===-1?0:r===0?Math.max(0,lvl-1):r===1?Math.min(6,lvl+1):Math.min(6,lvl+2);
   const srs=Object.assign({},rCurrent.srs||{});
   SRS_MODES.forEach(m=>{if(!srs[m])srs[m]=modeSrs(rCurrent,m);}); // backfill tracks for pre-srs cards
   srs[type]={level:newLevel,next_review:srsNext(newLevel)};
@@ -1299,7 +1304,13 @@ async function rateCard(r){
   SRS_MODES.forEach(m=>{const s=srs[m];if(s.level>maxLvl)maxLvl=s.level;if(s.next_review&&(!minNext||s.next_review<minNext))minNext=s.next_review;});
   await updateItem(rCurrent.id,{srs,level:maxLvl,next_review:minNext});
   recordReview();
-  rDone++;nextCard();
+  if(r===-1){
+    // Again: not graduated — re-show this card ~3 cards later in the same session
+    rQueue.splice(Math.min(rQueue.length,3),0,rCurrent);
+  } else {
+    rDone++;
+  }
+  nextCard();
 }
 
 // ── DECKS PAGE ────────────────────────────────────
