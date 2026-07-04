@@ -510,8 +510,10 @@ function modeSrs(item,type){
 }
 
 // Pure scheduler: given a mode state + rating, return the next mode state.
-function schedule(s0,rating){
-  const C=SRS_CONFIG, now=Date.now();
+// `nowArg` lets the caller pin a single reference time so the resulting `due`
+// and any same-session re-queue decision use the exact same instant.
+function schedule(s0,rating,nowArg){
+  const C=SRS_CONFIG, now=nowArg||Date.now();
   const s={state:s0.state,step:s0.step||0,interval:s0.interval||0,ease:s0.ease||C.startingEase,due:s0.due};
   const graduate=(easy)=>{
     if(s.state==='relearning'){
@@ -527,7 +529,12 @@ function schedule(s0,rating){
   if(s.state==='learning'||s.state==='relearning'){
     const steps=s.state==='learning'?C.learningSteps:C.relearningSteps;
     if(rating==='again'){ s.step=0; s.due=isoTs(now+steps[0]*MIN_MS); }
-    else if(rating==='hard'){ const d=steps[Math.min(s.step,steps.length-1)]; s.due=isoTs(now+d*MIN_MS); }
+    else if(rating==='hard'){
+      // stay on the current step, but a bit longer than Again (1.5x), capped below the next step
+      const cur=steps[Math.min(s.step,steps.length-1)], next=steps[s.step+1];
+      const d=next!==undefined?Math.min(cur*1.5,(cur+next)/2):cur*1.5;
+      s.due=isoTs(now+d*MIN_MS);
+    }
     else if(rating==='good'){ s.step++; if(s.step>=steps.length) graduate(false); else s.due=isoTs(now+steps[s.step]*MIN_MS); }
     else /* easy */ graduate(true);
   } else { // review
@@ -1396,7 +1403,8 @@ function flipCardExample(){
 
 async function rateCard(rating){
   const type=reviewType==='focus'?'ko-en':reviewType; // focus rates the KO→EN track
-  const s=schedule(modeSrs(rCurrent,type),rating);
+  const now=Date.now();
+  const s=schedule(modeSrs(rCurrent,type),rating,now);
   const srs=Object.assign({},rCurrent.srs||{});
   SRS_MODES.forEach(m=>{srs[m]=modeSrs(rCurrent,m);}); // normalize/backfill every track to the new shape
   srs[type]=s;
@@ -1408,7 +1416,7 @@ async function rateCard(rating){
   await updateItem(rCurrent.id,{srs,level:maxLvl,next_review:minNext});
   recordReview();
   // Sub-day learning/relearning steps re-appear later in the same session; everything else is done.
-  const subDay=(s.state==='learning'||s.state==='relearning')&&(new Date(s.due).getTime()-Date.now()<DAY_MS);
+  const subDay=(s.state==='learning'||s.state==='relearning')&&(new Date(s.due).getTime()-now<DAY_MS);
   if(subDay){
     rQueue.splice(Math.min(rQueue.length,3),0,rCurrent);
   } else {
