@@ -633,22 +633,6 @@ function showAuthScreen(){
 }
 
 // ── DB ────────────────────────────────────────────
-// One-time reset when migrating to the Anki scheduler: wipe all scheduling
-// progress, review history and streak so everything restarts on the new algorithm.
-async function resetAllProgressV3(){
-  setSyncStatus('syncing');
-  const t=today();
-  // 1) reset every card to a fresh learning state (one bulk update — identical for all rows)
-  try{ await sb.from('items').update({srs:newSrsSeed(),level:0,next_review:t}).eq('user_id',currentUser.id); }catch(e){}
-  items.forEach(it=>{ it.srs=newSrsSeed(); it.level=0; it.next_review=t; });
-  // 2) clear review history, streak and any saved session locally
-  reviewHistory={}; localStorage.setItem(REVIEW_HIST_SK,'{}');
-  streak=0; lastStudyDate=null; saveStreakLocal();
-  localStorage.removeItem('my_eng_session'); savedReview=null;
-  localStorage.setItem('my_eng_resetV3','1');
-  // 3) clear cloud copies + mark done so it runs only once per account (across devices)
-  try{ await sb.auth.updateUser({data:{reviewHist:{},streakData:{streak:0,lastStudyDate:null},savedReview:null,resetV3:true}}); }catch(e){}
-}
 async function loadAll() {
   if(!currentUser) return;
   setSyncStatus('syncing');
@@ -663,31 +647,26 @@ async function loadAll() {
   if(!r3.error) sets=r3.data||[];
   if(!r4.error) itemSets=r4.data||[];
   const {data:{user:u}}=await sb.auth.getUser();
-  if(!(u?.user_metadata?.resetV3||localStorage.getItem('my_eng_resetV3'))){
-    // One-time clean slate for the switch to the Anki scheduler: reset every card
-    // to a fresh learning state and zero out review history + streak. Runs once
-    // per account (guarded by the resetV3 flag in cloud metadata + localStorage).
-    await resetAllProgressV3();
-  } else {
-    // Merge cloud-synced review history so a streak built on another device is
-    // not lost; then persist the union locally and back to the cloud.
-    mergeReviewHistory(u?.user_metadata?.reviewHist);
-    localStorage.setItem(REVIEW_HIST_SK,JSON.stringify(reviewHistory));
-    const sd=JSON.parse(localStorage.getItem('my_eng_streak_'+(currentUser?.id||''))||'{"streak":0,"lastStudyDate":null}');
-    const cloudStreak=u?.user_metadata?.streakData;
-    streak=Math.max(sd.streak||0,cloudStreak?.streak||0);
-    lastStudyDate=sd.lastStudyDate||cloudStreak?.lastStudyDate||null;
-    const histStreak=computeCurrentStreakFromHistory();
-    if(histStreak>streak){
-      streak=histStreak;
-      // Keep lastStudyDate consistent with the recovered streak so the next
-      // updateStreak() doesn't misjudge continuity.
-      const hd=Object.keys(reviewHistory).filter(d=>reviewHistory[d]>0).sort();
-      if(hd.length) lastStudyDate=hd[hd.length-1];
-    }
-    saveStreakLocal();
-    syncReviewDataToCloud();
+  // Merge cloud-synced review history so a streak built on another device is
+  // not lost; then persist the union locally and back to the cloud.
+  // (No auto-reset: the one-time Anki migration is done; wiping here risked
+  //  repeatedly clearing progress/history when the guard flag was lost.)
+  mergeReviewHistory(u?.user_metadata?.reviewHist);
+  localStorage.setItem(REVIEW_HIST_SK,JSON.stringify(reviewHistory));
+  const sd=JSON.parse(localStorage.getItem('my_eng_streak_'+(currentUser?.id||''))||'{"streak":0,"lastStudyDate":null}');
+  const cloudStreak=u?.user_metadata?.streakData;
+  streak=Math.max(sd.streak||0,cloudStreak?.streak||0);
+  lastStudyDate=sd.lastStudyDate||cloudStreak?.lastStudyDate||null;
+  const histStreak=computeCurrentStreakFromHistory();
+  if(histStreak>streak){
+    streak=histStreak;
+    // Keep lastStudyDate consistent with the recovered streak so the next
+    // updateStreak() doesn't misjudge continuity.
+    const hd=Object.keys(reviewHistory).filter(d=>reviewHistory[d]>0).sort();
+    if(hd.length) lastStudyDate=hd[hd.length-1];
   }
+  saveStreakLocal();
+  syncReviewDataToCloud();
   const cloudSession=u?.user_metadata?.savedReview;
   if(cloudSession&&(cloudSession.queueIds?.length>0||cloudSession.currentId)){
     savedReview=cloudSession;
