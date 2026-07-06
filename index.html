@@ -429,16 +429,16 @@ function mergeReviewHistory(cloud){
   if(!cloud||typeof cloud!=='object') return;
   Object.keys(cloud).forEach(d=>{reviewHistory[d]=Math.max(reviewHistory[d]||0,cloud[d]||0);});
 }
-// All cross-device state (review history, streak, saved session) lives in Supabase
-// auth user_metadata. updateUser is rate-limited (429), so every writer funnels into
-// one debounced call that writes the full current snapshot instead of many small ones.
+// All cross-device state (review history, streak, saved session) lives in the
+// user_state table (auth updateUser was rate-limited → 429). Every writer funnels
+// into one debounced upsert that writes the full current snapshot.
 let _cloudSyncTimer=null;
 function syncCloud(){
   if(!sb||!currentUser) return;
   if(_cloudSyncTimer) clearTimeout(_cloudSyncTimer);
   _cloudSyncTimer=setTimeout(async()=>{
     _cloudSyncTimer=null;
-    try{ await sb.auth.updateUser({data:{reviewHist:reviewHistory,streakData:{streak,lastStudyDate},savedReview:savedReview||null}}); }catch(e){}
+    try{ await sb.from('user_state').upsert({user_id:currentUser.id,review_hist:reviewHistory,streak_data:{streak,lastStudyDate},saved_review:savedReview||null,updated_at:new Date().toISOString()}); }catch(e){}
   },6000);
 }
 function syncReviewDataToCloud(){ syncCloud(); }
@@ -647,25 +647,31 @@ function showAuthScreen(){
 async function loadAll() {
   if(!currentUser) return;
   setSyncStatus('syncing');
-  const [r1,r2,r3,r4]=await Promise.all([
+  const [r1,r2,r3,r4,r5]=await Promise.all([
     sb.from('items').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
     sb.from('decks').select('*').eq('user_id',currentUser.id).order('created_at'),
     sb.from('sets').select('*').eq('user_id',currentUser.id).order('created_at'),
-    sb.from('item_sets').select('*').eq('user_id',currentUser.id)
+    sb.from('item_sets').select('*').eq('user_id',currentUser.id),
+    sb.from('user_state').select('*').eq('user_id',currentUser.id).maybeSingle()
   ]);
   if(!r1.error) items=r1.data||[];
   if(!r2.error) decks=r2.data||[];
   if(!r3.error) sets=r3.data||[];
   if(!r4.error) itemSets=r4.data||[];
-  const {data:{user:u}}=await sb.auth.getUser();
-  // Merge cloud-synced review history so a streak built on another device is
-  // not lost; then persist the union locally and back to the cloud.
-  // (No auto-reset: the one-time Anki migration is done; wiping here risked
-  //  repeatedly clearing progress/history when the guard flag was lost.)
-  mergeReviewHistory(u?.user_metadata?.reviewHist);
+  // Cross-device state (review history, streak, saved session) lives in the
+  // user_state table now — auth updateUser was rate-limited (429). Fall back to
+  // the legacy auth user_metadata (then localStorage) so this keeps working before
+  // the table exists / until the first write migrates the data over.
+  let cloudHist,cloudStreak,cloudSession;
+  if(r5&&!r5.error&&r5.data){
+    cloudHist=r5.data.review_hist; cloudStreak=r5.data.streak_data; cloudSession=r5.data.saved_review;
+  } else {
+    const {data:{user:u}}=await sb.auth.getUser();
+    cloudHist=u?.user_metadata?.reviewHist; cloudStreak=u?.user_metadata?.streakData; cloudSession=u?.user_metadata?.savedReview;
+  }
+  mergeReviewHistory(cloudHist);
   localStorage.setItem(REVIEW_HIST_SK,JSON.stringify(reviewHistory));
   const sd=JSON.parse(localStorage.getItem('my_eng_streak_'+(currentUser?.id||''))||'{"streak":0,"lastStudyDate":null}');
-  const cloudStreak=u?.user_metadata?.streakData;
   streak=Math.max(sd.streak||0,cloudStreak?.streak||0);
   lastStudyDate=sd.lastStudyDate||cloudStreak?.lastStudyDate||null;
   const histStreak=computeCurrentStreakFromHistory();
@@ -677,10 +683,8 @@ async function loadAll() {
     if(hd.length) lastStudyDate=hd[hd.length-1];
   }
   saveStreakLocal();
-  // No cloud write on load — we only read here. Pushing on every page load (esp.
-  // with frequent refreshes) burned through the auth rate limit (429). The merged
-  // state is in localStorage and syncs out on visibilitychange (leaving the tab).
-  const cloudSession=u?.user_metadata?.savedReview;
+  // No cloud write on load — we only read here (syncing out happens on
+  // visibilitychange). cloudSession was resolved above from user_state/legacy.
   if(cloudSession&&(cloudSession.queueIds?.length>0||cloudSession.currentId)){
     savedReview=cloudSession;
   } else {
