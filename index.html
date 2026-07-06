@@ -428,10 +428,19 @@ function mergeReviewHistory(cloud){
   if(!cloud||typeof cloud!=='object') return;
   Object.keys(cloud).forEach(d=>{reviewHistory[d]=Math.max(reviewHistory[d]||0,cloud[d]||0);});
 }
-async function syncReviewDataToCloud(){
+// All cross-device state (review history, streak, saved session) lives in Supabase
+// auth user_metadata. updateUser is rate-limited (429), so every writer funnels into
+// one debounced call that writes the full current snapshot instead of many small ones.
+let _cloudSyncTimer=null;
+function syncCloud(){
   if(!sb||!currentUser) return;
-  try{await sb.auth.updateUser({data:{reviewHist:reviewHistory,streakData:{streak,lastStudyDate}}});}catch(e){}
+  if(_cloudSyncTimer) clearTimeout(_cloudSyncTimer);
+  _cloudSyncTimer=setTimeout(async()=>{
+    _cloudSyncTimer=null;
+    try{ await sb.auth.updateUser({data:{reviewHist:reviewHistory,streakData:{streak,lastStudyDate},savedReview:savedReview||null}}); }catch(e){}
+  },6000);
 }
+function syncReviewDataToCloud(){ syncCloud(); }
 function recordReview(){
   const t=today();reviewHistory[t]=(reviewHistory[t]||0)+1;
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);
@@ -1167,10 +1176,9 @@ function persistSession(s){
   if(s) localStorage.setItem('my_eng_session',JSON.stringify(s));
   else   localStorage.removeItem('my_eng_session');
 }
-async function syncSessionToCloud(s){
-  if(!sb||!currentUser) return;
-  await sb.auth.updateUser({data:{savedReview:s||null}});
-}
+// Callers set the savedReview global before calling; syncCloud reads it. Debounced +
+// coalesced with review-data sync so we never spam auth updateUser (429).
+function syncSessionToCloud(s){ syncCloud(); }
 
 function renderReview(){
   const area=document.getElementById('review-area');
