@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="MY·ENG" />
   <meta name="theme-color" content="#2d6a2d" />
   <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <title>MY·ENG</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1171,6 +1172,7 @@ async function importCsvData(btn){
 // ── REVIEW ────────────────────────────────────────
 let rQueue=[],rCurrent=null,rDone=0,reviewMode='all',reviewType='ko-en',reviewTag='all';
 let savedReview=null;
+let reviewEmptyInfo=null; // {due, eligible, type} — explains an empty session
 
 function persistSession(s){
   if(s) localStorage.setItem('my_eng_session',JSON.stringify(s));
@@ -1250,6 +1252,12 @@ function startReviewCards(){
     pool=scope.filter(w=>isModeDue(w,reviewType,t));
   }
   if(reviewTag!=='all') pool=pool.filter(w=>w.tag===reviewTag);
+  const dueCount=pool.length;
+  // ko-example / blank can only show cards that actually have the needed content.
+  // Filter here so the count is honest and the empty-state can explain why.
+  if(reviewType==='ko-example') pool=pool.filter(w=>w.example&&w.example_ko);
+  else if(reviewType==='blank') pool=pool.filter(w=>w.example);
+  reviewEmptyInfo={due:dueCount,eligible:pool.length,type:reviewType};
   rQueue=shuffle([...pool]);rDone=0;
   nextCard();
 }
@@ -1259,9 +1267,18 @@ function nextCard(){
   if(!rQueue.length){
     if(rDone>0) updateStreak();
     savedReview=null; persistSession(null); syncSessionToCloud(null);
-    area.innerHTML=rDone===0
-      ?`<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">All done for today!</div><div class="done-sub">You've reviewed all cards<br>See you tomorrow!</div></div>`
-      :`<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone} cards reviewed!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak} day streak</div></div>`;
+    const info=reviewEmptyInfo||{due:0,eligible:0,type:reviewType};
+    const modeNeedsExample=(info.type==='ko-example'||info.type==='blank');
+    let html;
+    if(rDone>0){
+      html=`<div class="done-box"><div class="done-emoji">✨</div><div class="done-title">${rDone} cards reviewed!</div><div class="done-sub" style="margin-top:6px;">🔥 ${streak} day streak</div></div>`;
+    } else if(modeNeedsExample && info.due>0 && info.eligible===0){
+      // Cards ARE due, but none have the example sentence this mode needs.
+      html=`<div class="done-box"><div class="done-emoji">📭</div><div class="done-title">No cards for this mode</div><div class="done-sub" style="margin-top:6px;">${info.due} card(s) are due today, but none have an example sentence, so this mode has nothing to show.<br><br>Try <b>KO → EN</b> mode, or add example sentences.</div></div>`;
+    } else {
+      html=`<div class="done-box"><div class="done-emoji">🎉</div><div class="done-title">All done for today!</div><div class="done-sub">No cards due in this set/mode.<br><span style="font-size:10px;color:var(--text3);">due today: ${info.due} · shown in this mode: ${info.eligible}</span></div></div>`;
+    }
+    area.innerHTML=html;
     updateHome();return;
   }
   rCurrent=rQueue.shift();
