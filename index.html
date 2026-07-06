@@ -445,7 +445,7 @@ function syncReviewDataToCloud(){ syncCloud(); }
 function recordReview(){
   const t=today();reviewHistory[t]=(reviewHistory[t]||0)+1;
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);
-  const cutStr=cutoff.toISOString().split('T')[0];
+  const cutStr=dateOf(cutoff); // local date, to match today()-keyed reviewHistory
   Object.keys(reviewHistory).forEach(d=>{if(d<cutStr)delete reviewHistory[d];});
   localStorage.setItem(REVIEW_HIST_SK,JSON.stringify(reviewHistory));
 }
@@ -1192,7 +1192,7 @@ function renderReview(){
   const area=document.getElementById('review-area');
   if(savedReview&&(savedReview.queueIds.length>0||savedReview.currentId)){
     const remaining=savedReview.queueIds.length+(savedReview.currentId?1:0);
-    const modeLabel={' ko-en':'KO→EN','blank':'Fill in blank','ko-example':'KO→Example','focus':'Focus'}[savedReview.type]||savedReview.type;
+    const modeLabel={'ko-en':'KO→EN','blank':'Fill in blank','ko-example':'KO→Example','focus':'Focus'}[savedReview.type]||savedReview.type;
     area.innerHTML=`
       <div class="card" style="margin-bottom:12px;">
         <div class="card-title">Resume previous session?</div>
@@ -1251,7 +1251,9 @@ function startReviewCards(){
   else scope=getSetItems(Number(reviewMode));
   let pool;
   if(reviewType==='focus'){
-    pool=scope.filter(w=>{const s=modeSrs(w,'ko-en');return s.state!=='review'||s.interval<7;}); // weak cards on the KO→EN track
+    // Weak cards on the KO→EN track, but only those actually due — otherwise a card
+    // just rated (and scheduled forward) would stay "weak" and re-appear immediately.
+    pool=scope.filter(w=>{const s=modeSrs(w,'ko-en');const weak=s.state!=='review'||s.interval<7;return weak&&isModeDue(w,'ko-en',t);});
   } else {
     // Each mode keeps its own next_review, so completing a card in one mode does
     // not mark it done in another — the modes are fully independent.
@@ -1314,7 +1316,10 @@ function nextCard(){
     const keyWords=words.filter(w=>w.length>3);
     const targetWord=keyWords[Math.floor(Math.random()*keyWords.length)]||words[0];
     const clean=targetWord.replace(/[.,!?;:]/g,'');
-    const blankedExample=rCurrent.example.replace(new RegExp(clean,'gi'),`<span class="blank" id="blank-word">${clean}</span>`);
+    // Escape regex metacharacters (e.g. "C++", "(informal)") so RegExp can't throw,
+    // and guard against an empty target that would match every position.
+    const escRe=clean.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const blankedExample=escRe?rCurrent.example.replace(new RegExp(escRe,'gi'),`<span class="blank" id="blank-word">${clean}</span>`):rCurrent.example;
     area.innerHTML=progressHtml+`
       <div class="review-card">
         <div class="rc-label">Fill in the blank</div>
@@ -1643,8 +1648,12 @@ async function confirmDeleteSet(id){
 }
 async function addToSet(setId,itemId){await addItemToSet(setId,itemId);renderSetDetail();}
 async function removeFromSet(setId,itemId){await removeItemFromSet(setId,itemId);renderSetDetail();}
-function startSetReview(setId){reviewMode=setId;reviewType='ko-en';showPage('review');}
-function startDeckReview(deckId){reviewMode='deck:'+deckId;reviewType='ko-en';showPage('review');}
+// Clicking Review on a specific deck/set is an explicit intent to review THAT scope,
+// so jump straight to its setup and skip the "resume previous session?" prompt (which
+// belongs to an unrelated saved session). The saved session is left intact and can
+// still be resumed from the main Review tab.
+function startSetReview(setId){reviewMode=setId;reviewType='ko-en';showPage('review');showReviewSetup();}
+function startDeckReview(deckId){reviewMode='deck:'+deckId;reviewType='ko-en';showPage('review');showReviewSetup();}
 function downloadDeckXlsx(deckId){
   const deck=decks.find(d=>d.id===deckId);
   if(!deck) return;
@@ -1690,7 +1699,7 @@ function renderStats(){
   const dots30=[];
   for(let i=29;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
-    const ds=d.toISOString().split('T')[0];
+    const ds=dateOf(d); // local date key, consistent with today()/reviewHistory
     dots30.push({date:ds,count:reviewHistory[ds]||0});
   }
   const max30=Math.max(...dots30.map(d=>d.count),1);
@@ -1705,7 +1714,7 @@ function renderStats(){
   const last7=[];
   for(let i=6;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
-    const ds=d.toISOString().split('T')[0];
+    const ds=dateOf(d); // local date key, consistent with today()/reviewHistory
     const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     last7.push({date:ds,day:dayNames[d.getDay()],count:reviewHistory[ds]||0});
   }
