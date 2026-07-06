@@ -677,7 +677,9 @@ async function loadAll() {
     if(hd.length) lastStudyDate=hd[hd.length-1];
   }
   saveStreakLocal();
-  syncReviewDataToCloud();
+  // No cloud write on load — we only read here. Pushing on every page load (esp.
+  // with frequent refreshes) burned through the auth rate limit (429). The merged
+  // state is in localStorage and syncs out on visibilitychange (leaving the tab).
   const cloudSession=u?.user_metadata?.savedReview;
   if(cloudSession&&(cloudSession.queueIds?.length>0||cloudSession.currentId)){
     savedReview=cloudSession;
